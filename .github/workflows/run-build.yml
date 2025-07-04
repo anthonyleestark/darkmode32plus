@@ -1,0 +1,35 @@
+name: Build the library
+permissions:
+      contents: read
+on:
+  push:
+    branches:
+      - main
+      - dev
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: windows-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        configuration: [ Release ]
+        arch: [ x64, Win32, arm64 ]
+        include:
+          - arch: x64
+            platform: x64
+          - arch: Win32
+            platform: Win32
+          - arch: arm64
+            platform: ARM64
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      - name: Add msbuild to PATH
+        uses: microsoft/setup-msbuild@v2
+
+      - name: Build ${{ matrix.arch }}
+        run: msbuild "darkmode32plus.sln" /m /p:configuration="${{ matrix.configuration }}" /p:platform="${{ matrix.arch }}"
