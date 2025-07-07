@@ -57,6 +57,7 @@
 #endif
 
 #include "DMSubclass.h"
+#include "WinVerHelper.h"
 
 #if !defined(_DARKMODELIB_NOT_USED)
 
@@ -1296,7 +1297,7 @@ namespace DarkMode
 	 */
 	static void initExperimentalDarkMode()
 	{
-		::InitDarkMode();
+		DarkModeHelper::InitDarkMode();
 	}
 
 	/**
@@ -1309,7 +1310,7 @@ namespace DarkMode
 	 */
 	static void setDarkMode(bool useDark, bool fixDarkScrollbar = true)
 	{
-		::SetDarkMode(useDark, fixDarkScrollbar);
+		DarkModeHelper::SetDarkMode(useDark, fixDarkScrollbar);
 	}
 
 	/**
@@ -1321,7 +1322,7 @@ namespace DarkMode
 	 */
 	static bool allowDarkModeForWindow(HWND hWnd, bool allow)
 	{
-		return ::AllowDarkModeForWindow(hWnd, allow);
+		return DarkModeHelper::AllowDarkModeForWindow(hWnd, allow);
 	}
 
 #if defined(_DARKMODELIB_ALLOW_OLD_OS)
@@ -1346,7 +1347,7 @@ namespace DarkMode
 	 */
 	[[nodiscard]] static bool isColorSchemeChangeMessage(LPARAM lParam)
 	{
-		return ::IsColorSchemeChangeMessage(lParam);
+		return DarkModeHelper::IsColorSchemeChangeMessage(lParam);
 	}
 
 	/**
@@ -1356,7 +1357,7 @@ namespace DarkMode
 	 */
 	static bool isHighContrast()
 	{
-		return ::IsHighContrast();
+		return DarkModeHelper::IsHighContrast();
 	}
 
 	/**
@@ -1617,7 +1618,7 @@ namespace DarkMode
 	 */
 	bool isExperimentalActive()
 	{
-		return g_darkModeEnabled;
+		return DarkModeHelper::g_darkModeEnabled;
 	}
 
 	/**
@@ -1627,7 +1628,7 @@ namespace DarkMode
 	 */
 	bool isExperimentalSupported()
 	{
-		return g_darkModeSupported;
+		return DarkModeHelper::g_darkModeSupported;
 	}
 
 	/**
@@ -1647,7 +1648,7 @@ namespace DarkMode
 	 */
 	bool isAtLeastWindows10()
 	{
-		return ::IsWindows10();
+		return WinVerHelper::IsWindows10_OrLater();
 	}
 	/**
 	 * @brief Checks if the host OS is at least Windows 11.
@@ -1656,7 +1657,7 @@ namespace DarkMode
 	 */
 	bool isAtLeastWindows11()
 	{
-		return ::IsWindows11();
+		return WinVerHelper::IsWindows11_OrLater();
 	}
 
 	/**
@@ -1666,7 +1667,7 @@ namespace DarkMode
 	 */
 	DWORD getWindowsBuildNumber()
 	{
-		return GetWindowsBuildNumber();
+		return 0; // GetWindowsBuildNumber();	// TODO: Update later
 	}
 
 	/**
@@ -1743,7 +1744,7 @@ namespace DarkMode
 	 */
 	void setSysColor(int nIndex, COLORREF color)
 	{
-		::SetMySysColor(nIndex, color);
+		DarkModeHelper::SetMySysColor(nIndex, color);
 	}
 
 	/**
@@ -1753,7 +1754,7 @@ namespace DarkMode
 	 */
 	static bool hookSysColor()
 	{
-		return ::HookSysColor();
+		return DarkModeHelper::HookSysColor();
 	}
 
 	/**
@@ -1765,7 +1766,7 @@ namespace DarkMode
 	 */
 	static void unhookSysColor()
 	{
-		::UnhookSysColor();
+		DarkModeHelper::UnhookSysColor();
 	}
 
 	/**
@@ -1777,7 +1778,7 @@ namespace DarkMode
 	 */
 	void enableDarkScrollBarForWindowAndChildren(HWND hWnd)
 	{
-		::EnableDarkScrollBarForWindowAndChildren(hWnd);
+		DarkModeHelper::EnableDarkScrollBarForWindowAndChildren(hWnd);
 	}
 
 	/**

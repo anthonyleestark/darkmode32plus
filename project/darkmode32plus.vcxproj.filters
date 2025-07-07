@@ -24,10 +24,16 @@
     <ClInclude Include="..\include\IatHook.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="..\include\ModuleHelper.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
     <ClInclude Include="..\include\UAHMenuBar.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\include\Version.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\WinVerHelper.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

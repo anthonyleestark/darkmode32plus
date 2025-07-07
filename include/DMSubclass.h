@@ -47,7 +47,6 @@
 
 
 #pragma once
-
 #include <windows.h>
 
 #if (NTDDI_VERSION >= NTDDI_VISTA) /*\

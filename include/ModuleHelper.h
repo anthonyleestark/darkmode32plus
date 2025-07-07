@@ -40,10 +40,77 @@
 
 
 #pragma once
+#include <windows.h>
 
-#define DM_VERSION_MAJOR		1
-#define DM_VERSION_MINOR		0
-#define DM_VERSION_REVISION		1
+namespace ModuleHelper
+{
+	// Manage module handle
+	class ModuleHandle
+	{
+	public:
+		// Constructors
+		ModuleHandle() = delete;
+		explicit ModuleHandle(const wchar_t* moduleName)
+			: hModule(LoadLibraryEx(moduleName, nullptr, LOAD_LIBRARY_SEARCH_SYSTEM32)) {
+		};
 
-#define DM_VERSION_INFO			"Win32 API Darkmode v1.0.1"
-#define DM_COPYRIGHT_INFO		"Copyright (c) 2025 Anthony Lee Stark"
+		// No copyable
+		ModuleHandle(const ModuleHandle&) = delete;
+		ModuleHandle& operator=(const ModuleHandle&) = delete;
+
+		// No movable
+		ModuleHandle(ModuleHandle&&) = delete;
+		ModuleHandle& operator=(ModuleHandle&&) = delete;
+
+		// Destructor
+		~ModuleHandle() {
+			if (hModule != nullptr)
+				FreeLibrary(hModule);
+		};
+
+	public:
+		[[nodiscard]] HMODULE Get() const noexcept {
+			return hModule;
+		};
+
+		[[nodiscard]] bool IsLoaded() const noexcept {
+			return hModule != nullptr;
+		};
+
+	private:
+		HMODULE hModule = nullptr;
+	};
+
+	// Replace function pointer
+	template <typename FuncPtr>
+	static auto ReplaceFunction(IMAGE_THUNK_DATA* addr, const FuncPtr& newFunction) -> FuncPtr
+	{
+		DWORD oldProtect = 0;
+		if (!VirtualProtect(addr, sizeof(IMAGE_THUNK_DATA), PAGE_READWRITE, &oldProtect))
+			return nullptr;
+
+		const uintptr_t oldFunction = addr->u1.Function;
+		addr->u1.Function = reinterpret_cast<uintptr_t>(newFunction);
+		VirtualProtect(addr, sizeof(IMAGE_THUNK_DATA), oldProtect, &oldProtect);
+		return reinterpret_cast<FuncPtr>(oldFunction);
+	};
+
+	// Load function from module by name
+	template <typename FuncPtr>
+	static auto LoadFunc(HMODULE handle, FuncPtr& pointer, const char* name) -> bool
+	{
+		if (auto proc = ::GetProcAddress(handle, name); proc != nullptr) {
+			pointer = reinterpret_cast<FuncPtr>(proc);
+			return true;
+		}
+
+		return false;
+	};
+
+	// Load function from module by index
+	template <typename FuncPtr>
+	static auto LoadFunc(HMODULE handle, FuncPtr& pointer, WORD index) -> bool
+	{
+		return LoadFunc(handle, pointer, MAKEINTRESOURCEA(index));
+	};
+};
