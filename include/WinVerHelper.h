@@ -70,6 +70,24 @@ namespace WinVerHelper
 		WIN11_VER_25H2 = (unsigned short)26200,	// 2025 Update
 	};
 
+	// Get Windows OS version build number
+	[[nodiscard]] inline DWORD GetOSBuildNumber() noexcept {
+		DWORD retBuildNumber = 0;
+		if (HMODULE hNtdll = GetModuleHandleW(L"ntdll.dll")) {
+			using fnRtlGetNtVersionNumbers = void (WINAPI*)(LPDWORD major, LPDWORD minor, LPDWORD build);
+			auto RtlGetNtVersionNumbers = reinterpret_cast<fnRtlGetNtVersionNumbers>(GetProcAddress(hNtdll, "RtlGetNtVersionNumbers"));
+			if (RtlGetNtVersionNumbers)
+			{
+				DWORD major = 0;
+				DWORD minor = 0;
+				RtlGetNtVersionNumbers(&major, &minor, &retBuildNumber);
+				retBuildNumber &= ~0xF0000000;
+			}
+		}
+
+		return retBuildNumber;
+	};
+
 	// Check if is a Windows version or later
 	[[nodiscard]] inline bool IsWinVer_OrLater(WORD wVersion, WORD wBuildNumber = 0) noexcept {
 		DWORDLONG dwlConditionMask = 0;

@@ -57,9 +57,10 @@
 #endif
 
 #include "DMSubclass.h"
+#include "SysColorHook.h"
 #include "WinVerHelper.h"
 
-#if !defined(_DARKMODELIB_NOT_USED)
+#if !defined(_DARKMODE_NOT_USED)
 
 #include <dwmapi.h>
 #include <richedit.h>
@@ -145,7 +146,7 @@ static bool CmpWndClassName(HWND hWnd, const wchar_t* classNameToCmp)
 	return (GetWndClassName(hWnd) == classNameToCmp);
 }
 
-#if !defined(_DARKMODELIB_NO_INI_CONFIG)
+#if !defined(_DARKMODE_NO_INI_CONFIG)
 /**
  * @brief Constructs a full path to an `.ini` file located next to the executable.
  *
@@ -246,7 +247,7 @@ static bool SetClrFromIni(const std::wstring& sectionName, const std::wstring& k
 
 	return true;
 }
-#endif // !defined(_DARKMODELIB_NO_INI_CONFIG)
+#endif // !defined(_DARKMODE_NO_INI_CONFIG)
 
 namespace DarkMode
 {
@@ -294,7 +295,7 @@ namespace DarkMode
 
 			case LibInfo::iathookExternal:
 			{
-#if defined(_DARKMODELIB_EXTERNAL_IATHOOK)
+#if defined(_DARKMODE_EXTERNAL_IATHOOK)
 				return TRUE;
 #else
 				return FALSE;
@@ -303,7 +304,7 @@ namespace DarkMode
 
 			case LibInfo::iniConfigUsed:
 			{
-#if !defined(_DARKMODELIB_NO_INI_CONFIG)
+#if !defined(_DARKMODE_NO_INI_CONFIG)
 				return TRUE;
 #else
 				return FALSE;
@@ -312,7 +313,7 @@ namespace DarkMode
 
 			case LibInfo::allowOldOS:
 			{
-#if defined(_DARKMODELIB_ALLOW_OLD_OS)
+#if defined(_DARKMODE_SUPPORT_OLDER_OS)
 				return TRUE;
 #else
 				return FALSE;
@@ -321,7 +322,7 @@ namespace DarkMode
 
 			case LibInfo::useDlgProcCtl:
 			{
-#if defined(_DARKMODELIB_DLG_PROC_CTLCOLOR_RETURNS)
+#if defined(_DARKMODE_DLG_PROC_CTLCOLOR_RETURNS)
 				return TRUE;
 #else
 				return FALSE;
@@ -330,7 +331,7 @@ namespace DarkMode
 
 			case LibInfo::preferTheme:
 			{
-#if defined(_DARKMODELIB_PREFER_THEME)
+#if defined(_DARKMODE_PREFER_THEME)
 				return TRUE;
 #else
 				return FALSE;
@@ -417,7 +418,7 @@ namespace DarkMode
 			bool _isInit = false;
 			bool _isInitExperimental = false;
 
-#if !defined(_DARKMODELIB_NO_INI_CONFIG)
+#if !defined(_DARKMODE_NO_INI_CONFIG)
 			std::wstring _iniName;
 			bool _isIniNameSet = false;
 #endif
@@ -1325,17 +1326,17 @@ namespace DarkMode
 		return DarkModeHelper::AllowDarkModeForWindow(hWnd, allow);
 	}
 
-#if defined(_DARKMODELIB_ALLOW_OLD_OS)
+#if defined(_DARKMODE_SUPPORT_OLDER_OS)
 	/**
 	 * @brief Refreshes the title bar theme color for legacy systems.
 	 *
-	 * Used only on old Windows 10 systems when `_DARKMODELIB_ALLOW_OLD_OS` is defined.
+	 * Used only on old Windows 10 systems when `_DARKMODE_SUPPORT_OLDER_OS` is defined.
 	 *
 	 * @param hWnd Handle to the window to update.
 	 */
 	static void setTitleBarThemeColor(HWND hWnd)
 	{
-		::RefreshTitleBarThemeColor(hWnd);
+		DarkModeHelper::RefreshTitleBarThemeColor(hWnd);
 	}
 #endif
 
@@ -1374,7 +1375,7 @@ namespace DarkMode
 			&& DarkMode::isExperimentalSupported();
 	}
 
-#if !defined(_DARKMODELIB_NO_INI_CONFIG)
+#if !defined(_DARKMODE_NO_INI_CONFIG)
 	 /**
 	  * @brief Initializes dark mode configuration and colors from an INI file.
 	  *
@@ -1489,7 +1490,7 @@ namespace DarkMode
 			DarkMode::setDefaultColors(true);
 		}
 	}
-#endif // !defined(_DARKMODELIB_NO_INI_CONFIG)
+#endif // !defined(_DARKMODE_NO_INI_CONFIG)
 
 	/**
 	 * @brief Applies dark mode settings based on the given configuration type.
@@ -1558,7 +1559,7 @@ namespace DarkMode
 				g_dmCfg._isInitExperimental = true;
 			}
 
-#if !defined(_DARKMODELIB_NO_INI_CONFIG)
+#if !defined(_DARKMODE_NO_INI_CONFIG)
 			if (!g_dmCfg._isIniNameSet)
 			{
 				g_dmCfg._iniName = iniName;
@@ -1597,14 +1598,14 @@ namespace DarkMode
 	/**
 	 * @brief Checks if non-classic mode is enabled.
 	 *
-	 * If `_DARKMODELIB_ALLOW_OLD_OS` is defined, this skips Windows version checks.
+	 * If `_DARKMODE_SUPPORT_OLDER_OS` is defined, this skips Windows version checks.
 	 * Otherwise, dark mode is only enabled on Windows 10 or newer.
 	 *
 	 * @return `true` if a supported dark mode type is active, otherwise `false`.
 	 */
 	bool isEnabled()
 	{
-#if defined(_DARKMODELIB_ALLOW_OLD_OS)
+#if defined(_DARKMODE_SUPPORT_OLDER_OS)
 		return g_dmCfg._dmType != DarkModeType::classic;
 #else
 		return DarkMode::isAtLeastWindows10() && g_dmCfg._dmType != DarkModeType::classic;
@@ -1667,7 +1668,7 @@ namespace DarkMode
 	 */
 	DWORD getWindowsBuildNumber()
 	{
-		return 0; // GetWindowsBuildNumber();	// TODO: Update later
+		return WinVerHelper::GetOSBuildNumber();
 	}
 
 	/**
@@ -1744,7 +1745,7 @@ namespace DarkMode
 	 */
 	void setSysColor(int nIndex, COLORREF color)
 	{
-		DarkModeHelper::SetMySysColor(nIndex, color);
+		SysColorHook::SetMySysColor(nIndex, color);
 	}
 
 	/**
@@ -1754,7 +1755,7 @@ namespace DarkMode
 	 */
 	static bool hookSysColor()
 	{
-		return DarkModeHelper::HookSysColor();
+		return SysColorHook::HookSysColor();
 	}
 
 	/**
@@ -1766,7 +1767,7 @@ namespace DarkMode
 	 */
 	static void unhookSysColor()
 	{
-		DarkModeHelper::UnhookSysColor();
+		SysColorHook::UnhookSysColor();
 	}
 
 	/**
@@ -5719,7 +5720,7 @@ namespace DarkMode
 
 	void setChildCtrlsTheme(HWND hParent)
 	{
-#if defined(_DARKMODELIB_ALLOW_OLD_OS)
+#if defined(_DARKMODE_SUPPORT_OLDER_OS)
 		DarkMode::setChildCtrlsSubclassAndTheme(hParent, false, true);
 #else
 		DarkMode::setChildCtrlsSubclassAndTheme(hParent, false, DarkMode::isAtLeastWindows10());
@@ -7176,7 +7177,7 @@ namespace DarkMode
 	 *   (`DWMWA_CAPTION_COLOR`, `DWMWA_TEXT_COLOR`),
 	 *   only when frames are not extended to full window
 	 *
-	 * If `_DARKMODELIB_ALLOW_OLD_OS` is defined and running on pre-2004 builds,
+	 * If `_DARKMODE_SUPPORT_OLDER_OS` is defined and running on pre-2004 builds,
 	 * fallback behavior will enable dark title bars via undocumented APIs.
 	 *
 	 * @param hWnd Handle to the top-level window.
@@ -7189,9 +7190,8 @@ namespace DarkMode
 	 */
 	void setDarkTitleBarEx(HWND hWnd, bool useWin11Features)
 	{
-		static constexpr DWORD win10Build2004 = 19041;
-		static constexpr DWORD win11Mica = 22621;
-		if (DarkMode::getWindowsBuildNumber() >= win10Build2004)
+		static const DWORD buildNumber = DarkMode::getWindowsBuildNumber();
+		if (buildNumber >= WinVerHelper::WIN10_VER_2004)
 		{
 			const BOOL useDark = DarkMode::isExperimentalActive() ? TRUE : FALSE;
 			::DwmSetWindowAttribute(hWnd, DWMWA_USE_IMMERSIVE_DARK_MODE, &useDark, sizeof(useDark));
@@ -7203,7 +7203,7 @@ namespace DarkMode
 
 				bool canColorizeTitleBar = true;
 
-				if (DarkMode::getWindowsBuildNumber() >= win11Mica)
+				if (buildNumber >= WinVerHelper::WIN11_VER_22H2)
 				{
 					if (g_dmCfg._micaExtend && g_dmCfg._mica != DWMSBT_AUTO && !DarkMode::isWindowsModeEnabled() && (g_dmCfg._dmType == DarkModeType::dark))
 					{
@@ -7223,7 +7223,7 @@ namespace DarkMode
 				::DwmSetWindowAttribute(hWnd, DWMWA_TEXT_COLOR, &clrText, sizeof(clrText));
 			}
 		}
-#if defined(_DARKMODELIB_ALLOW_OLD_OS)
+#if defined(_DARKMODE_SUPPORT_OLDER_OS)
 		else
 		{
 			DarkMode::allowDarkModeForWindow(hWnd, DarkMode::isExperimentalActive());
@@ -8087,14 +8087,14 @@ namespace DarkMode
 	 *
 	 * @param hdc Handle to the device context (HDC) receiving the drawing instructions.
 	 * @return Background brush to use for painting, or `FALSE` (0) if classic mode is enabled
-	 *         and `_DARKMODELIB_DLG_PROC_CTLCOLOR_RETURNS` is defined.
+	 *         and `_DARKMODE_DLG_PROC_CTLCOLOR_RETURNS` is defined.
 	 *
 	 * @see DarkMode::WindowCtlColorSubclass()
 	 * @see DarkMode::onCtlColorListbox()
 	 */
 	LRESULT onCtlColor(HDC hdc)
 	{
-#if defined(_DARKMODELIB_DLG_PROC_CTLCOLOR_RETURNS)
+#if defined(_DARKMODE_DLG_PROC_CTLCOLOR_RETURNS)
 		if (!DarkMode::_isEnabled())
 		{
 			return FALSE;
@@ -8115,14 +8115,14 @@ namespace DarkMode
 	 *
 	 * @param hdc Handle to the device context for the target control.
 	 * @return The background brush, or `FALSE` if dark mode is disabled and
-	 *         `_DARKMODELIB_DLG_PROC_CTLCOLOR_RETURNS` is defined.
+	 *         `_DARKMODE_DLG_PROC_CTLCOLOR_RETURNS` is defined.
 	 *
 	 * @see DarkMode::WindowCtlColorSubclass()
 	 * @see DarkMode::onCtlColorListbox()
 	 */
 	LRESULT onCtlColorCtrl(HDC hdc)
 	{
-#if defined(_DARKMODELIB_DLG_PROC_CTLCOLOR_RETURNS)
+#if defined(_DARKMODE_DLG_PROC_CTLCOLOR_RETURNS)
 		if (!DarkMode::_isEnabled())
 		{
 			return FALSE;
@@ -8144,14 +8144,14 @@ namespace DarkMode
 	 *
 	 * @param hdc Handle to the device context for the target control.
 	 * @return The background brush, or `FALSE` if dark mode is disabled and
-	 *         `_DARKMODELIB_DLG_PROC_CTLCOLOR_RETURNS` is defined.
+	 *         `_DARKMODE_DLG_PROC_CTLCOLOR_RETURNS` is defined.
 	 *
 	 * @see DarkMode::WindowCtlColorSubclass()
 	 * @see DarkMode::onCtlColorListbox()
 	 */
 	LRESULT onCtlColorDlg(HDC hdc)
 	{
-#if defined(_DARKMODELIB_DLG_PROC_CTLCOLOR_RETURNS)
+#if defined(_DARKMODE_DLG_PROC_CTLCOLOR_RETURNS)
 		if (!DarkMode::_isEnabled())
 		{
 			return FALSE;
@@ -8170,13 +8170,13 @@ namespace DarkMode
 	 *
 	 * @param hdc Handle to the device context for the target control.
 	 * @return The background brush, or `FALSE` if dark mode is disabled and
-	 *         `_DARKMODELIB_DLG_PROC_CTLCOLOR_RETURNS` is defined.
+	 *         `_DARKMODE_DLG_PROC_CTLCOLOR_RETURNS` is defined.
 	 *
 	 * @see DarkMode::WindowCtlColorSubclass()
 	 */
 	LRESULT onCtlColorError(HDC hdc)
 	{
-#if defined(_DARKMODELIB_DLG_PROC_CTLCOLOR_RETURNS)
+#if defined(_DARKMODE_DLG_PROC_CTLCOLOR_RETURNS)
 		if (!DarkMode::_isEnabled())
 		{
 			return FALSE;
@@ -8198,13 +8198,13 @@ namespace DarkMode
 	 *
 	 * @param hdc Handle to the device context for the target control.
 	 * @return The background brush, or `FALSE` if dark mode is disabled and
-	 *         `_DARKMODELIB_DLG_PROC_CTLCOLOR_RETURNS` is defined.
+	 *         `_DARKMODE_DLG_PROC_CTLCOLOR_RETURNS` is defined.
 	 *
 	 * @see DarkMode::WindowCtlColorSubclass()
 	 */
 	LRESULT onCtlColorDlgStaticText(HDC hdc, bool isTextEnabled)
 	{
-#if defined(_DARKMODELIB_DLG_PROC_CTLCOLOR_RETURNS)
+#if defined(_DARKMODE_DLG_PROC_CTLCOLOR_RETURNS)
 		if (!DarkMode::_isEnabled())
 		{
 			::SetTextColor(hdc, ::GetSysColor(isTextEnabled ? COLOR_WINDOWTEXT : COLOR_GRAYTEXT));
@@ -8226,13 +8226,13 @@ namespace DarkMode
 	 *
 	 * @param hdc Handle to the device context for the target control.
 	 * @return The background brush, or `FALSE` if dark mode is disabled and
-	 *         `_DARKMODELIB_DLG_PROC_CTLCOLOR_RETURNS` is defined.
+	 *         `_DARKMODE_DLG_PROC_CTLCOLOR_RETURNS` is defined.
 	 *
 	 * @see DarkMode::WindowCtlColorSubclass()
 	 */
 	LRESULT onCtlColorDlgLinkText(HDC hdc, bool isTextEnabled)
 	{
-#if defined(_DARKMODELIB_DLG_PROC_CTLCOLOR_RETURNS)
+#if defined(_DARKMODE_DLG_PROC_CTLCOLOR_RETURNS)
 		if (!DarkMode::_isEnabled())
 		{
 			::SetTextColor(hdc, ::GetSysColor(isTextEnabled ? COLOR_HOTLIGHT : COLOR_GRAYTEXT));
@@ -8294,4 +8294,4 @@ namespace DarkMode
 	}
 } // namespace DarkMode
 
-#endif // !defined(_DARKMODELIB_NOT_USED)
+#endif // !defined(_DARKMODE_NOT_USED)

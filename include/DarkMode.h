@@ -123,9 +123,9 @@ namespace DarkModeHelper
 	using fnGetIsImmersiveColorUsingHighContrast = auto (WINAPI*)(IMMERSIVE_HC_CACHE_MODE mode) -> bool; // ordinal 106
 	using fnOpenNcThemeData = auto (WINAPI*)(HWND hWnd, LPCWSTR pszClassList)->HTHEME; // ordinal 49
 	// 1903 18362
-	//using fnShouldSystemUseDarkMode = auto (WINAPI*)() -> bool; // ordinal 138
+	using fnShouldSystemUseDarkMode = auto (WINAPI*)() -> bool; // ordinal 138
 	using fnSetPreferredAppMode = auto (WINAPI*)(PreferredAppMode appMode)->PreferredAppMode; // ordinal 135, in 1903
-	//using fnIsDarkModeAllowedForApp = auto (WINAPI*)() -> bool; // ordinal 139
+	using fnIsDarkModeAllowedForApp = auto (WINAPI*)() -> bool; // ordinal 139
 
 // Global variables
 	extern bool g_darkModeSupported;
@@ -148,8 +148,4 @@ namespace DarkModeHelper
 	void EnableDarkScrollBarForWindowAndChildren(HWND hWnd);
 	void InitDarkMode();
 	void SetDarkMode(bool useDark, bool fixDarkScrollbar);
-
-	void SetMySysColor(int nIndex, COLORREF clr) noexcept;
-	bool HookSysColor();
-	void UnhookSysColor();
 };

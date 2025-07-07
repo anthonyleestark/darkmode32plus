@@ -51,38 +51,25 @@
 
 
 #include "DarkMode.h"
+#include "IatHook.h"
 using namespace DarkModeHelper;
 
 
 #include "WinVerHelper.h"
+using namespace WinVerHelper;
 
 // Supported Windows version
 static unsigned long g_buildNumber = 0;
 #if defined(_DARKMODE_SUPPORT_OLDER_OS)
-static constexpr unsigned short MinSupportVersion = WinVerHelper::WinVer::WIN10_VER_1809;
+static constexpr unsigned short MinSupportVersion = WinVer::WIN10_VER_1809;
 #else
-static constexpr unsigned short MinSupportVersion = WinVerHelper::WinVer::WIN10_VER_22H2;
+static constexpr unsigned short MinSupportVersion = WinVer::WIN10_VER_22H2;
 #endif
 
 
 // For module management
 #include "ModuleHelper.h"
 using namespace ModuleHelper;
-
-#include <mutex>
-#include <unordered_set>
-
-
-// Dark mode external IatHook
-#if !defined(_DARKMODE_EXTERNAL_IATHOOK)
-	#include "IatHook.h"
-#else
-	extern PIMAGE_THUNK_DATA FindAddressByName(void* moduleBase, PIMAGE_THUNK_DATA impName, PIMAGE_THUNK_DATA impAddr, const char* funcName);
-	extern PIMAGE_THUNK_DATA FindAddressByOrdinal(void* moduleBase, PIMAGE_THUNK_DATA impName, PIMAGE_THUNK_DATA impAddr, uint16_t ordinal);
-	extern PIMAGE_THUNK_DATA FindIatThunkInModule(void* moduleBase, const char* dllName, const char* funcName);
-	extern PIMAGE_THUNK_DATA FindDelayLoadThunkInModule(void* moduleBase, const char* dllName, const char* funcName);
-	extern PIMAGE_THUNK_DATA FindDelayLoadThunkInModule(void* moduleBase, const char* dllName, uint16_t ordinal);
-#endif
 
 
 #if defined(_MSC_VER) && _MSC_VER >= 1800
@@ -92,14 +79,14 @@ using namespace ModuleHelper;
 #endif
 
 
-// Function pointers
+// Dark Mode function pointers
 #if defined(_DARKMODE_SUPPORT_OLDER_OS)
 static fnSetWindowCompositionAttribute pfSetWindowCompositionAttribute = nullptr;
 #endif
 static fnShouldAppsUseDarkMode pfShouldAppsUseDarkMode = nullptr;
 static fnAllowDarkModeForWindow pfAllowDarkModeForWindow = nullptr;
 #if defined(_DARKMODE_SUPPORT_OLDER_OS)
-static fnAllowDarkModeForApp _AllowDarkModeForApp = nullptr;
+static fnAllowDarkModeForApp pfAllowDarkModeForApp = nullptr;
 #endif
 static fnFlushMenuThemes pfFlushMenuThemes = nullptr;
 static fnRefreshImmersiveColorPolicyState pfRefreshImmersiveColorPolicyState = nullptr;
@@ -107,13 +94,13 @@ static fnIsDarkModeAllowedForWindow pfIsDarkModeAllowedForWindow = nullptr;
 static fnGetIsImmersiveColorUsingHighContrast pfGetIsImmersiveColorUsingHighContrast = nullptr;
 static fnOpenNcThemeData pfOpenNcThemeData = nullptr;
 // 1903 18362
-//static fnShouldSystemUseDarkMode _ShouldSystemUseDarkMode = nullptr;
+static fnShouldSystemUseDarkMode pfShouldSystemUseDarkMode = nullptr;
 static fnSetPreferredAppMode pfSetPreferredAppMode = nullptr;
 
 
 // Global variables initialization
-bool DarkModeHelper::g_darkModeSupported = false;
-bool DarkModeHelper::g_darkModeEnabled = false;
+bool DarkModeHelper::g_darkModeSupported	= false;
+bool DarkModeHelper::g_darkModeEnabled		= false;
 
 
 // Should application use Dark Mode or not
@@ -132,8 +119,8 @@ void DarkModeHelper::AllowDarkModeForApp(bool allow) noexcept
 		pfSetPreferredAppMode(allow ? PreferredAppMode::ForceDark : PreferredAppMode::Default);
 
 #if defined(_DARKMODE_SUPPORT_OLDER_OS)
-	else if (_AllowDarkModeForApp != nullptr)
-		_AllowDarkModeForApp(allow);
+	else if (pfAllowDarkModeForApp != nullptr)
+		pfAllowDarkModeForApp(allow);
 #endif
 }
 
@@ -183,6 +170,7 @@ void DarkModeHelper::RefreshTitleBarThemeColor(HWND hWnd)
 }
 #endif
 
+// Check for color scheme change message
 bool DarkModeHelper::IsColorSchemeChangeMessage(LPARAM lParam)
 {
 	bool result = false;
@@ -199,6 +187,7 @@ bool DarkModeHelper::IsColorSchemeChangeMessage(LPARAM lParam)
 	return result;
 }
 
+// Check for color scheme change message
 bool DarkModeHelper::IsColorSchemeChangeMessage(UINT message, LPARAM lParam)
 {
 	if (message == WM_SETTINGCHANGE)
@@ -207,16 +196,21 @@ bool DarkModeHelper::IsColorSchemeChangeMessage(UINT message, LPARAM lParam)
 	return false;
 }
 
+// Flush menu themes
 static void FlushMenuThemes() noexcept
 {
 	if (pfFlushMenuThemes)
 		pfFlushMenuThemes();
 }
 
-// limit dark scroll bar to specific windows and their children
 
+/// For limitting dark scroll bar to specific windows and their children
+
+#include <mutex>
+#include <unordered_set>
+
+static std::mutex				g_darkScrollBarMutex;
 static std::unordered_set<HWND> g_darkScrollBarWindows;
-static std::mutex g_darkScrollBarMutex;
 
 // Enable dark scroll bars for a specific window and its children
 void DarkModeHelper::EnableDarkScrollBarForWindowAndChildren(HWND hWnd)
@@ -245,6 +239,7 @@ static bool IsWindowOrParentUsingDarkScrollBar(HWND hWnd)
 	return (hWnd != hRoot && hasElement(g_darkScrollBarWindows, hRoot));
 }
 
+// Custom OpenNcThemeData() replacement
 static HTHEME WINAPI MyOpenNcThemeData(HWND hWnd, LPCWSTR pszClassList)
 {
 	if (std::wcscmp(pszClassList, WC_SCROLLBAR) == 0) {
@@ -275,6 +270,7 @@ void DarkModeHelper::InitDarkMode()
 	static bool isInit = false;
 	if (isInit)
 		return;
+
 	using namespace WinVerHelper;
 	fnRtlGetNtVersionNumbers RtlGetNtVersionNumbers = nullptr;
 	HMODULE hNtdll = GetModuleHandleW(L"ntdll.dll");
@@ -294,7 +290,7 @@ void DarkModeHelper::InitDarkMode()
 				bool ptrFnOrd135NotNullptr = false;
 #if defined(_DARKMODE_SUPPORT_OLDER_OS)
 				if (g_buildNumber < WinVer::WIN10_VER_1903)
-					ptrFnOrd135NotNullptr = LoadFunc(hUxtheme, _AllowDarkModeForApp, 135);
+					ptrFnOrd135NotNullptr = LoadFunc(hUxtheme, pfAllowDarkModeForApp, 135);
 				else
 #endif
 					ptrFnOrd135NotNullptr = LoadFunc(hUxtheme, pfSetPreferredAppMode, 135);
@@ -336,114 +332,8 @@ void DarkModeHelper::SetDarkMode(bool useDarkMode, bool fixDarkScrollbar)
 		if (fixDarkScrollbar)
 			FixDarkScrollBar();
 
+		// Set the flag
 		g_darkModeEnabled = useDarkMode && ShouldAppsUseDarkMode() && !IsHighContrast();
 	}
 }
 
-// Hooking GetSysColor for comboboxex' list box and list view's gridlines
-
-using fnGetSysColor = auto (WINAPI*)(int nIndex) -> DWORD;
-
-static fnGetSysColor pfGetSysColor = nullptr;
-
-static COLORREF g_clrWindow = RGB(32, 32, 32);
-static COLORREF g_clrText = RGB(224, 224, 224);
-static COLORREF g_clrTGridlines = RGB(100, 100, 100);
-
-static bool g_isGetSysColorHooked = false;
-static int g_hookRef = 0;
-
-// Override system color
-void DarkModeHelper::SetMySysColor(int nIndex, COLORREF clr) noexcept
-{
-	switch (nIndex)
-	{
-		case COLOR_WINDOW:
-			g_clrWindow = clr;
-			break;
-
-		case COLOR_WINDOWTEXT:
-			g_clrText = clr;
-			break;
-
-		case COLOR_BTNFACE:
-			g_clrTGridlines = clr;
-			break;
-
-		default:
-			break;
-	}
-}
-
-// Custom GetSysColor replacement
-static DWORD WINAPI MyGetSysColor(int nIndex)
-{
-	if (!g_darkModeEnabled)
-		return GetSysColor(nIndex);
-
-	switch (nIndex)
-	{
-		case COLOR_WINDOW:
-			return g_clrWindow;
-
-		case COLOR_WINDOWTEXT:
-			return g_clrText;
-
-		case COLOR_BTNFACE:
-			return g_clrTGridlines;
-
-		default:
-			return GetSysColor(nIndex);
-	}
-}
-
-// Install system color hook
-bool DarkModeHelper::HookSysColor()
-{
-	const ModuleHandle moduleComctl(L"comctl32.dll");
-	if (moduleComctl.IsLoaded())
-	{
-		if (pfGetSysColor == nullptr || !g_isGetSysColorHooked)
-		{
-			auto* addr = FindIatThunkInModule(moduleComctl.Get(), "user32.dll", "GetSysColor");
-			if (addr != nullptr)
-			{
-				pfGetSysColor = ReplaceFunction<fnGetSysColor>(addr, MyGetSysColor);
-				g_isGetSysColorHooked = true;
-			}
-			else
-				return false;
-		}
-
-		if (g_isGetSysColorHooked)
-			++g_hookRef;
-
-		return true;
-	}
-
-	return false;
-}
-
-// Uninstall system color hook
-void DarkModeHelper::UnhookSysColor()
-{
-	const ModuleHandle moduleComctl(L"comctl32.dll");
-	if (moduleComctl.IsLoaded())
-	{
-		if (g_isGetSysColorHooked)
-		{
-			if (g_hookRef > 0)
-				--g_hookRef;
-
-			if (g_hookRef == 0)
-			{
-				auto* addr = FindIatThunkInModule(moduleComctl.Get(), "user32.dll", "GetSysColor");
-				if (addr != nullptr)
-				{
-					ReplaceFunction<fnGetSysColor>(addr, pfGetSysColor);
-					g_isGetSysColorHooked = false;
-				}
-			}
-		}
-	}
-}

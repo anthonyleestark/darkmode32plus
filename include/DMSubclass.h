@@ -683,5 +683,5 @@ namespace DarkMode
 } // namespace DarkMode
 
 #else
-#define _DARKMODELIB_NOT_USED
+#define _DARKMODE_NOT_USED
 #endif // (NTDDI_VERSION >= NTDDI_VISTA) //&& (x64 or arm64)
