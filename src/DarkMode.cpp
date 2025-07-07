@@ -83,6 +83,7 @@ using namespace ModuleHelper;
 #if defined(_DARKMODE_SUPPORT_OLDER_OS)
 static fnSetWindowCompositionAttribute pfSetWindowCompositionAttribute = nullptr;
 #endif
+// Windows 10 version 1809 build number 17763
 static fnShouldAppsUseDarkMode pfShouldAppsUseDarkMode = nullptr;
 static fnAllowDarkModeForWindow pfAllowDarkModeForWindow = nullptr;
 #if defined(_DARKMODE_SUPPORT_OLDER_OS)
@@ -93,7 +94,7 @@ static fnRefreshImmersiveColorPolicyState pfRefreshImmersiveColorPolicyState = n
 static fnIsDarkModeAllowedForWindow pfIsDarkModeAllowedForWindow = nullptr;
 static fnGetIsImmersiveColorUsingHighContrast pfGetIsImmersiveColorUsingHighContrast = nullptr;
 static fnOpenNcThemeData pfOpenNcThemeData = nullptr;
-// 1903 18362
+// Windows 10 version 1903 build number 18362
 static fnShouldSystemUseDarkMode pfShouldSystemUseDarkMode = nullptr;
 static fnSetPreferredAppMode pfSetPreferredAppMode = nullptr;
 
@@ -104,7 +105,7 @@ bool DarkModeHelper::g_darkModeEnabled		= false;
 
 
 // Should application use Dark Mode or not
-bool DarkModeHelper::ShouldAppsUseDarkMode() noexcept
+bool DarkModeHelper::ShouldAppsUseDarkMode(void) noexcept
 {
 	if (pfShouldAppsUseDarkMode)
 		return pfShouldAppsUseDarkMode();
@@ -113,14 +114,14 @@ bool DarkModeHelper::ShouldAppsUseDarkMode() noexcept
 }
 
 // Allow dark mode for the application or not
-void DarkModeHelper::AllowDarkModeForApp(bool allow) noexcept
+void DarkModeHelper::AllowDarkModeForApp(bool isAllowed) noexcept
 {
 	if (pfSetPreferredAppMode != nullptr)
-		pfSetPreferredAppMode(allow ? PreferredAppMode::ForceDark : PreferredAppMode::Default);
+		pfSetPreferredAppMode(isAllowed ? PreferredAppMode::ForceDark : PreferredAppMode::Default);
 
 #if defined(_DARKMODE_SUPPORT_OLDER_OS)
 	else if (pfAllowDarkModeForApp != nullptr)
-		pfAllowDarkModeForApp(allow);
+		pfAllowDarkModeForApp(isAllowed);
 #endif
 }
 
@@ -134,7 +135,7 @@ bool DarkModeHelper::AllowDarkModeForWindow(HWND hWnd, bool allow) noexcept
 }
 
 // Is system currently in high contrast mode
-bool DarkModeHelper::IsHighContrast()
+bool DarkModeHelper::IsHighContrast(void)
 {
 	HIGHCONTRASTW highContrast{};
 	highContrast.cbSize = sizeof(HIGHCONTRASTW);
@@ -146,13 +147,13 @@ bool DarkModeHelper::IsHighContrast()
 
 #if defined(_DARKMODE_SUPPORT_OLDER_OS)
 // Set title bar theme color
-void DarkModeHelper::SetTitleBarThemeColor(HWND hWnd, BOOL dark)
+void DarkModeHelper::SetTitleBarThemeColor(HWND hWnd, BOOL isDark)
 {
 	using namespace WinVerHelper;
 	if (g_buildNumber < WinVer::WIN10_VER_1903)
-		SetPropW(hWnd, L"UseImmersiveDarkModeColors", reinterpret_cast<HANDLE>(static_cast<intptr_t>(dark)));
+		SetPropW(hWnd, L"UseImmersiveDarkModeColors", reinterpret_cast<HANDLE>(static_cast<intptr_t>(isDark)));
 	else if (pfSetWindowCompositionAttribute != nullptr) {
-		WINDOWCOMPOSITIONATTRIBDATA data{ WCA_USEDARKMODECOLORS, &dark, sizeof(dark) };
+		WINDOWCOMPOSITIONATTRIBDATA data{ WCA_USEDARKMODECOLORS, &isDark, sizeof(isDark) };
 		pfSetWindowCompositionAttribute(hWnd, &data);
 	}
 }
@@ -160,13 +161,13 @@ void DarkModeHelper::SetTitleBarThemeColor(HWND hWnd, BOOL dark)
 // Refresh title bar theme color
 void DarkModeHelper::RefreshTitleBarThemeColor(HWND hWnd)
 {
-	BOOL dark = FALSE;
+	BOOL isDark = FALSE;
 	if (pfIsDarkModeAllowedForWindow != nullptr && pfShouldAppsUseDarkMode != nullptr) {
 		if (pfIsDarkModeAllowedForWindow(hWnd) && pfShouldAppsUseDarkMode() && !IsHighContrast())
-			dark = TRUE;
+			isDark = TRUE;
 	}
 
-	SetTitleBarThemeColor(hWnd, dark);
+	SetTitleBarThemeColor(hWnd, isDark);
 }
 #endif
 
@@ -323,13 +324,13 @@ void DarkModeHelper::InitDarkMode()
 }
 
 // Set Dark Mode
-void DarkModeHelper::SetDarkMode(bool useDarkMode, bool fixDarkScrollbar)
+void DarkModeHelper::SetDarkMode(bool useDarkMode, bool doFixDarkScrollbar)
 {
 	if (g_darkModeSupported)
 	{
 		AllowDarkModeForApp(useDarkMode);
 		FlushMenuThemes();
-		if (fixDarkScrollbar)
+		if (doFixDarkScrollbar)
 			FixDarkScrollBar();
 
 		// Set the flag

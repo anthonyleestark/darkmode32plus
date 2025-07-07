@@ -55,7 +55,7 @@ namespace DarkModeHelper
 		IHCM_REFRESH
 	};
 
-	// 1903 18362
+	// Windows 10 version 1903 build number 18362
 	enum class PreferredAppMode
 	{
 		Default,
@@ -111,7 +111,7 @@ namespace DarkModeHelper
 #if defined(_DARKMODE_SUPPORT_OLDER_OS)
 	using fnSetWindowCompositionAttribute = BOOL(WINAPI*)(HWND hWnd, WINDOWCOMPOSITIONATTRIBDATA*);
 #endif
-	// 1809 17763
+	// Windows 10 version 1809 build number 17763
 	using fnShouldAppsUseDarkMode = auto (WINAPI*)() -> bool; // ordinal 132
 	using fnAllowDarkModeForWindow = auto (WINAPI*)(HWND hWnd, bool allow) -> bool; // ordinal 133
 #if defined(_DARKMODE_SUPPORT_OLDER_OS)
@@ -121,10 +121,10 @@ namespace DarkModeHelper
 	using fnRefreshImmersiveColorPolicyState = void (WINAPI*)(); // ordinal 104
 	using fnIsDarkModeAllowedForWindow = auto (WINAPI*)(HWND hWnd) -> bool; // ordinal 137
 	using fnGetIsImmersiveColorUsingHighContrast = auto (WINAPI*)(IMMERSIVE_HC_CACHE_MODE mode) -> bool; // ordinal 106
-	using fnOpenNcThemeData = auto (WINAPI*)(HWND hWnd, LPCWSTR pszClassList)->HTHEME; // ordinal 49
-	// 1903 18362
+	using fnOpenNcThemeData = auto (WINAPI*)(HWND hWnd, LPCWSTR pszClassList) -> HTHEME; // ordinal 49
+	// Windows 10 version 1903 build number 18362
 	using fnShouldSystemUseDarkMode = auto (WINAPI*)() -> bool; // ordinal 138
-	using fnSetPreferredAppMode = auto (WINAPI*)(PreferredAppMode appMode)->PreferredAppMode; // ordinal 135, in 1903
+	using fnSetPreferredAppMode = auto (WINAPI*)(PreferredAppMode appMode) -> PreferredAppMode; // ordinal 135, in 1903
 	using fnIsDarkModeAllowedForApp = auto (WINAPI*)() -> bool; // ordinal 139
 
 // Global variables
@@ -132,20 +132,21 @@ namespace DarkModeHelper
 	extern bool g_darkModeEnabled;
 
 // DarkMode helpers
-	[[nodiscard]] bool ShouldAppsUseDarkMode() noexcept;
-	bool AllowDarkModeForWindow(HWND hWnd, bool allow) noexcept;
-	[[nodiscard]] bool IsHighContrast();
+	[[nodiscard]] bool ShouldAppsUseDarkMode(void) noexcept;
+	bool AllowDarkModeForWindow(HWND hWnd, bool isAllowed) noexcept;
+	[[nodiscard]] bool IsHighContrast(void);
 
 #if defined(_DARKMODE_SUPPORT_OLDER_OS)
 	void RefreshTitleBarThemeColor(HWND hWnd);
-	void SetTitleBarThemeColor(HWND hWnd, BOOL dark);
+	void SetTitleBarThemeColor(HWND hWnd, BOOL isDark);
 #endif
 
 	[[nodiscard]] bool IsColorSchemeChangeMessage(LPARAM lParam);
-	[[nodiscard]] bool IsColorSchemeChangeMessage(UINT uMsg, LPARAM lParam);
+	[[nodiscard]] bool IsColorSchemeChangeMessage(UINT message, LPARAM lParam);
 
-	void AllowDarkModeForApp(bool allow) noexcept;
+	void AllowDarkModeForApp(bool isAllowed) noexcept;
 	void EnableDarkScrollBarForWindowAndChildren(HWND hWnd);
-	void InitDarkMode();
-	void SetDarkMode(bool useDark, bool fixDarkScrollbar);
+
+	void InitDarkMode(void);
+	void SetDarkMode(bool useDark, bool doFixDarkScrollbar);
 };
