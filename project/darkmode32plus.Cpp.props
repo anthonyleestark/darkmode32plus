@@ -3,7 +3,7 @@
   <PropertyGroup Label="Configuration">
     <LinkIncremental>false</LinkIncremental>
     <EnableCppCoreCheck>true</EnableCppCoreCheck>
-    <CodeAnalysisRuleSet>PowerPlusApp.ruleset</CodeAnalysisRuleSet>
+    <CodeAnalysisRuleSet>darkmode32plus.ruleset</CodeAnalysisRuleSet>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)'=='Debug'" Label="Configuration">
@@ -18,7 +18,7 @@
   <ItemDefinitionGroup Label="Globals">
     <ClCompile>
       <PreprocessorDefinitions>
-        _WINDOWS;STRICT_TYPED_ITEMIDS;NOMINMAX;WIN32_LEAN_AND_MEAN;VC_EXTRALEAN;SUPPORT_UTF8;%(PreprocessorDefinitions)
+        _WINDOWS;STRICT_TYPED_ITEMIDS;NOMINMAX;WIN32_LEAN_AND_MEAN;VC_EXTRALEAN;SUPPORT_UTF8;_DARKMODE_NO_INI_CONFIG;%(PreprocessorDefinitions)
       </PreprocessorDefinitions>
       <AdditionalIncludeDirectories>..\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <LanguageStandard>stdcpp20</LanguageStandard>

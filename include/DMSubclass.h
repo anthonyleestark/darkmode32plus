@@ -47,7 +47,6 @@
 
 
 #pragma once
-
 #include <windows.h>
 
 #if (NTDDI_VERSION >= NTDDI_VISTA) /*\
@@ -192,7 +191,7 @@ namespace DarkMode
 	 *
 	 * @see LibInfo
 	 */
-	[[nodiscard]] int getLibInfo(LibInfo libInfoType);
+	[[nodiscard]] int getLibInfo(LibInfo libInfoType) noexcept;
 
 	// ========================================================================
 	// Config
@@ -214,19 +213,19 @@ namespace DarkMode
 	void initDarkModeConfig(UINT dmType);
 
 	/// Sets the preferred window corner style on Windows 11. (DWM_WINDOW_CORNER_PREFERENCE values)
-	void setRoundCornerConfig(UINT roundCornerStyle);
+	void setRoundCornerConfig(UINT roundCornerStyle) noexcept;
 
 	/// Sets the preferred border color for window edge on Windows 11.
-	void setBorderColorConfig(COLORREF clr);
+	void setBorderColorConfig(COLORREF clr) noexcept;
 
 	// Sets the Mica effects on Windows 11 setting. (DWM_SYSTEMBACKDROP_TYPE values)
-	void setMicaConfig(UINT mica);
+	void setMicaConfig(UINT mica) noexcept;
 
 	/// Sets Mica effects on the full window setting.
-	void setMicaExtendedConfig(bool extendMica);
+	void setMicaExtendedConfig(bool extendMica) noexcept;
 
 	/// Sets dialog colors on title bar on Windows 11 setting.
-	void setColorizeTitleBarConfig(bool colorize);
+	void setColorizeTitleBarConfig(bool colorize) noexcept;
 
 	/// Applies dark mode settings based on the given configuration type. (DarkModeType values)
 	void setDarkModeConfig(UINT dmType);
@@ -245,25 +244,25 @@ namespace DarkMode
 	// ========================================================================
 
 	/// Checks if non-classic mode is enabled.
-	[[nodiscard]] bool isEnabled();
+	[[nodiscard]] bool isEnabled() noexcept;
 
 	/// Checks if experimental dark mode features are currently active.
-	[[nodiscard]] bool isExperimentalActive();
+	[[nodiscard]] bool isExperimentalActive() noexcept;
 
 	/// Checks if experimental dark mode features are supported by the system.
-	[[nodiscard]] bool isExperimentalSupported();
+	[[nodiscard]] bool isExperimentalSupported() noexcept;
 
 	/// Checks if follow the system mode behavior is enabled.
-	[[nodiscard]] bool isWindowsModeEnabled();
+	[[nodiscard]] bool isWindowsModeEnabled() noexcept;
 
 	/// Checks if the host OS is at least Windows 10.
-	[[nodiscard]] bool isAtLeastWindows10();
+	[[nodiscard]] bool isAtLeastWindows10() noexcept;
 
 	/// Checks if the host OS is at least Windows 11.
-	[[nodiscard]] bool isAtLeastWindows11();
+	[[nodiscard]] bool isAtLeastWindows11() noexcept;
 
 	/// Retrieves the current Windows build number.
-	[[nodiscard]] DWORD getWindowsBuildNumber();
+	[[nodiscard]] DWORD getWindowsBuildNumber() noexcept;
 
 	// ========================================================================
 	// System Events
@@ -290,7 +289,7 @@ namespace DarkMode
 	 * @param nIndex One of the supported system color indices.
 	 * @param color Custom `COLORREF` value to apply.
 	 */
-	void setSysColor(int nIndex, COLORREF color);
+	void setSysColor(int nIndex, COLORREF color) noexcept;
 
 	// ========================================================================
 	// Enhancements to DarkMode.h
@@ -304,10 +303,10 @@ namespace DarkMode
 	// ========================================================================
 
 	/// Sets the color tone and its color set for the active theme.
-	void setColorTone(ColorTone colorTone);
+	void setColorTone(ColorTone colorTone) noexcept;
 
 	/// Retrieves the currently active color tone for the theme.
-	[[nodiscard]] ColorTone getColorTone();
+	[[nodiscard]] ColorTone getColorTone() noexcept;
 
 	COLORREF setBackgroundColor(COLORREF clrNew);
 	COLORREF setCtrlBackgroundColor(COLORREF clrNew);
@@ -324,38 +323,38 @@ namespace DarkMode
 	COLORREF setHotEdgeColor(COLORREF clrNew);
 	COLORREF setDisabledEdgeColor(COLORREF clrNew);
 
-	void setThemeColors(Colors colors);
-	void updateThemeBrushesAndPens();
+	void setThemeColors(Colors colors) noexcept;
+	void updateThemeBrushesAndPens() noexcept;
 
-	[[nodiscard]] COLORREF getBackgroundColor();
-	[[nodiscard]] COLORREF getCtrlBackgroundColor();
-	[[nodiscard]] COLORREF getHotBackgroundColor();
-	[[nodiscard]] COLORREF getDlgBackgroundColor();
-	[[nodiscard]] COLORREF getErrorBackgroundColor();
+	[[nodiscard]] COLORREF getBackgroundColor() noexcept;
+	[[nodiscard]] COLORREF getCtrlBackgroundColor() noexcept;
+	[[nodiscard]] COLORREF getHotBackgroundColor() noexcept;
+	[[nodiscard]] COLORREF getDlgBackgroundColor() noexcept;
+	[[nodiscard]] COLORREF getErrorBackgroundColor() noexcept;
 
-	[[nodiscard]] COLORREF getTextColor();
-	[[nodiscard]] COLORREF getDarkerTextColor();
-	[[nodiscard]] COLORREF getDisabledTextColor();
-	[[nodiscard]] COLORREF getLinkTextColor();
+	[[nodiscard]] COLORREF getTextColor() noexcept;
+	[[nodiscard]] COLORREF getDarkerTextColor() noexcept;
+	[[nodiscard]] COLORREF getDisabledTextColor() noexcept;
+	[[nodiscard]] COLORREF getLinkTextColor() noexcept;
 
-	[[nodiscard]] COLORREF getEdgeColor();
-	[[nodiscard]] COLORREF getHotEdgeColor();
-	[[nodiscard]] COLORREF getDisabledEdgeColor();
+	[[nodiscard]] COLORREF getEdgeColor() noexcept;
+	[[nodiscard]] COLORREF getHotEdgeColor() noexcept;
+	[[nodiscard]] COLORREF getDisabledEdgeColor() noexcept;
 
-	[[nodiscard]] HBRUSH getBackgroundBrush();
-	[[nodiscard]] HBRUSH getDlgBackgroundBrush();
-	[[nodiscard]] HBRUSH getCtrlBackgroundBrush();
-	[[nodiscard]] HBRUSH getHotBackgroundBrush();
-	[[nodiscard]] HBRUSH getErrorBackgroundBrush();
+	[[nodiscard]] HBRUSH getBackgroundBrush() noexcept;
+	[[nodiscard]] HBRUSH getDlgBackgroundBrush() noexcept;
+	[[nodiscard]] HBRUSH getCtrlBackgroundBrush() noexcept;
+	[[nodiscard]] HBRUSH getHotBackgroundBrush() noexcept;
+	[[nodiscard]] HBRUSH getErrorBackgroundBrush() noexcept;
 
-	[[nodiscard]] HBRUSH getEdgeBrush();
-	[[nodiscard]] HBRUSH getHotEdgeBrush();
-	[[nodiscard]] HBRUSH getDisabledEdgeBrush();
+	[[nodiscard]] HBRUSH getEdgeBrush() noexcept;
+	[[nodiscard]] HBRUSH getHotEdgeBrush() noexcept;
+	[[nodiscard]] HBRUSH getDisabledEdgeBrush() noexcept;
 
-	[[nodiscard]] HPEN getDarkerTextPen();
-	[[nodiscard]] HPEN getEdgePen();
-	[[nodiscard]] HPEN getHotEdgePen();
-	[[nodiscard]] HPEN getDisabledEdgePen();
+	[[nodiscard]] HPEN getDarkerTextPen() noexcept;
+	[[nodiscard]] HPEN getEdgePen() noexcept;
+	[[nodiscard]] HPEN getHotEdgePen() noexcept;
+	[[nodiscard]] HPEN getDisabledEdgePen() noexcept;
 
 	COLORREF setViewBackgroundColor(COLORREF clrNew);
 	COLORREF setViewTextColor(COLORREF clrNew);
@@ -369,22 +368,22 @@ namespace DarkMode
 	void setViewColors(ColorsView colors);
 	void updateViewBrushesAndPens();
 
-	[[nodiscard]] COLORREF getViewBackgroundColor();
-	[[nodiscard]] COLORREF getViewTextColor();
-	[[nodiscard]] COLORREF getViewGridlinesColor();
+	[[nodiscard]] COLORREF getViewBackgroundColor() noexcept;
+	[[nodiscard]] COLORREF getViewTextColor() noexcept;
+	[[nodiscard]] COLORREF getViewGridlinesColor() noexcept;
 
-	[[nodiscard]] COLORREF getHeaderBackgroundColor();
-	[[nodiscard]] COLORREF getHeaderHotBackgroundColor();
-	[[nodiscard]] COLORREF getHeaderTextColor();
-	[[nodiscard]] COLORREF getHeaderEdgeColor();
+	[[nodiscard]] COLORREF getHeaderBackgroundColor() noexcept;
+	[[nodiscard]] COLORREF getHeaderHotBackgroundColor() noexcept;
+	[[nodiscard]] COLORREF getHeaderTextColor() noexcept;
+	[[nodiscard]] COLORREF getHeaderEdgeColor() noexcept;
 
-	[[nodiscard]] HBRUSH getViewBackgroundBrush();
-	[[nodiscard]] HBRUSH getViewGridlinesBrush();
+	[[nodiscard]] HBRUSH getViewBackgroundBrush() noexcept;
+	[[nodiscard]] HBRUSH getViewGridlinesBrush() noexcept;
 
-	[[nodiscard]] HBRUSH getHeaderBackgroundBrush();
-	[[nodiscard]] HBRUSH getHeaderHotBackgroundBrush();
+	[[nodiscard]] HBRUSH getHeaderBackgroundBrush() noexcept;
+	[[nodiscard]] HBRUSH getHeaderHotBackgroundBrush() noexcept;
 
-	[[nodiscard]] HPEN getHeaderEdgePen();
+	[[nodiscard]] HPEN getHeaderEdgePen() noexcept;
 
 	/// Initializes default color set based on the current mode type.
 	void setDefaultColors(bool updateBrushesAndOther);
@@ -515,7 +514,7 @@ namespace DarkMode
 	/// Applies visual styles; ctl color message and child controls subclassings to a window safely.
 	void setDarkWndSafe(HWND hWnd, bool useWin11Features = true);
 	/// Applies visual styles; ctl color message, child controls, custom drawing, and setting change subclassings to a window safely.
-	void setDarkWndNotifySafeEx(HWND hWnd, bool setSettingChangeSubclass = false, bool useWin11Features = true);
+	void setDarkWndNotifySafeEx(HWND hWnd, bool setSettingChangeSubclass, bool useWin11Features);
 	/// Applies visual styles; ctl color message, child controls, and custom drawing subclassings to a window safely.
 	void setDarkWndNotifySafe(HWND hWnd, bool useWin11Features = true);
 
@@ -526,10 +525,10 @@ namespace DarkMode
 	void disableVisualStyle(HWND hWnd, bool doDisable);
 
 	/// Calculates perceptual lightness of a COLORREF color.
-	[[nodiscard]] double calculatePerceivedLightness(COLORREF clr);
+	[[nodiscard]] double calculatePerceivedLightness(COLORREF clr) noexcept;
 
 	/// Retrieves the current TreeView style configuration.
-	[[nodiscard]] const TreeViewStyle& getTreeViewStyle();
+	[[nodiscard]] const TreeViewStyle& getTreeViewStyle() noexcept;
 
 	/// Determines appropriate TreeView style based on background perceived lightness.
 	void calculateTreeViewStyle();
@@ -538,16 +537,16 @@ namespace DarkMode
 	void setTreeViewWindowTheme(HWND hWnd, bool force = false);
 
 	/// Retrieves the previous TreeView style configuration.
-	[[nodiscard]] const TreeViewStyle& getPrevTreeViewStyle();
+	[[nodiscard]] const TreeViewStyle& getPrevTreeViewStyle() noexcept;
 
 	/// Stores the current TreeView style as the previous style for later comparison.
-	void setPrevTreeViewStyle();
+	void setPrevTreeViewStyle() noexcept;
 
 	/// Checks whether the current theme is dark.
-	[[nodiscard]] bool isThemeDark();
+	[[nodiscard]] bool isThemeDark() noexcept;
 
 	/// Checks whether the color is dark.
-	[[nodiscard]] bool isColorDark(COLORREF clr);
+	[[nodiscard]] bool isColorDark(COLORREF clr) noexcept;
 
 	/// Forces a window to redraw its non-client frame.
 	void redrawWindowFrame(HWND hWnd);
@@ -684,5 +683,5 @@ namespace DarkMode
 } // namespace DarkMode
 
 #else
-#define _DARKMODELIB_NOT_USED
+#define _DARKMODE_NOT_USED
 #endif // (NTDDI_VERSION >= NTDDI_VISTA) //&& (x64 or arm64)

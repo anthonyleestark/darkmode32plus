@@ -90,13 +90,17 @@
     <ClInclude Include="..\include\DarkMode.h" />
     <ClInclude Include="..\include\DMSubclass.h" />
     <ClInclude Include="..\include\IatHook.h" />
+    <ClInclude Include="..\include\ModuleHelper.h" />
+    <ClInclude Include="..\include\SysColorHook.h" />
     <ClInclude Include="..\include\UAHMenuBar.h" />
     <ClInclude Include="..\include\Version.h" />
+    <ClInclude Include="..\include\WinVerHelper.h" />
   </ItemGroup>
 
   <ItemGroup>
     <ClCompile Include="..\src\DarkMode.cpp" />
     <ClCompile Include="..\src\DMSubclass.cpp" />
+    <ClCompile Include="..\src\SysColorHook.cpp" />
   </ItemGroup>
 
   <!-- Clean OutDir manually before each build -->

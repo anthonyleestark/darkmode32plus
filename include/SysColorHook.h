@@ -40,10 +40,13 @@
 
 
 #pragma once
+#include <windows.h>
 
-#define DM_VERSION_MAJOR		1
-#define DM_VERSION_MINOR		0
-#define DM_VERSION_REVISION		1
+namespace SysColorHook
+{
+	using fnGetSysColor = auto (WINAPI*)(int nIndex)->DWORD;
 
-#define DM_VERSION_INFO			"Win32 API Darkmode v1.0.1"
-#define DM_COPYRIGHT_INFO		"Copyright (c) 2025 Anthony Lee Stark"
+	void SetMySysColor(int nIndex, COLORREF clr) noexcept;
+	bool HookSysColor();
+	void UnhookSysColor();
+};

@@ -24,10 +24,19 @@
     <ClInclude Include="..\include\IatHook.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="..\include\ModuleHelper.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\SysColorHook.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
     <ClInclude Include="..\include\UAHMenuBar.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\include\Version.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\WinVerHelper.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
@@ -36,6 +45,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="..\src\DMSubclass.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\SysColorHook.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

@@ -57,8 +57,10 @@
 #endif
 
 #include "DMSubclass.h"
+#include "SysColorHook.h"
+#include "WinVerHelper.h"
 
-#if !defined(_DARKMODELIB_NOT_USED)
+#if !defined(_DARKMODE_NOT_USED)
 
 #include <dwmapi.h>
 #include <richedit.h>
@@ -144,7 +146,7 @@ static bool CmpWndClassName(HWND hWnd, const wchar_t* classNameToCmp)
 	return (GetWndClassName(hWnd) == classNameToCmp);
 }
 
-#if !defined(_DARKMODELIB_NO_INI_CONFIG)
+#if !defined(_DARKMODE_NO_INI_CONFIG)
 /**
  * @brief Constructs a full path to an `.ini` file located next to the executable.
  *
@@ -236,7 +238,8 @@ static bool SetClrFromIni(const std::wstring& sectionName, const std::wstring& k
 	try
 	{
 		static constexpr int baseHex = 16;
-		*clr = HEXRGB(std::stoul(buffer, nullptr, baseHex));
+		if (clr)
+			*clr = HEXRGB(std::stoul(buffer, nullptr, baseHex));
 	}
 	catch (const std::exception&)
 	{
@@ -245,7 +248,7 @@ static bool SetClrFromIni(const std::wstring& sectionName, const std::wstring& k
 
 	return true;
 }
-#endif // !defined(_DARKMODELIB_NO_INI_CONFIG)
+#endif // !defined(_DARKMODE_NO_INI_CONFIG)
 
 namespace DarkMode
 {
@@ -266,7 +269,7 @@ namespace DarkMode
 	 *
 	 * @see LibInfo
 	 */
-	int getLibInfo(LibInfo libInfoType)
+	int getLibInfo(LibInfo libInfoType) noexcept
 	{
 		switch (libInfoType)
 		{
@@ -293,7 +296,7 @@ namespace DarkMode
 
 			case LibInfo::iathookExternal:
 			{
-#if defined(_DARKMODELIB_EXTERNAL_IATHOOK)
+#if defined(_DARKMODE_EXTERNAL_IATHOOK)
 				return TRUE;
 #else
 				return FALSE;
@@ -302,7 +305,7 @@ namespace DarkMode
 
 			case LibInfo::iniConfigUsed:
 			{
-#if !defined(_DARKMODELIB_NO_INI_CONFIG)
+#if !defined(_DARKMODE_NO_INI_CONFIG)
 				return TRUE;
 #else
 				return FALSE;
@@ -311,7 +314,7 @@ namespace DarkMode
 
 			case LibInfo::allowOldOS:
 			{
-#if defined(_DARKMODELIB_ALLOW_OLD_OS)
+#if defined(_DARKMODE_SUPPORT_OLDER_OS)
 				return TRUE;
 #else
 				return FALSE;
@@ -320,7 +323,7 @@ namespace DarkMode
 
 			case LibInfo::useDlgProcCtl:
 			{
-#if defined(_DARKMODELIB_DLG_PROC_CTLCOLOR_RETURNS)
+#if defined(_DARKMODE_DLG_PROC_CTLCOLOR_RETURNS)
 				return TRUE;
 #else
 				return FALSE;
@@ -329,13 +332,14 @@ namespace DarkMode
 
 			case LibInfo::preferTheme:
 			{
-#if defined(_DARKMODELIB_PREFER_THEME)
+#if defined(_DARKMODE_PREFER_THEME)
 				return TRUE;
 #else
 				return FALSE;
 #endif
 			}
 		}
+
 		return -1; // should never happen
 	}
 
@@ -400,7 +404,7 @@ namespace DarkMode
 	namespace // anonymous
 	{
 		/// Global struct
-		struct a
+		struct
 		{
 			DWM_WINDOW_CORNER_PREFERENCE _roundCorner = DWMWCP_DEFAULT;
 			COLORREF _borderColor = DWMWA_COLOR_DEFAULT;
@@ -416,12 +420,12 @@ namespace DarkMode
 			bool _isInit = false;
 			bool _isInitExperimental = false;
 
-#if !defined(_DARKMODELIB_NO_INI_CONFIG)
+#if !defined(_DARKMODE_NO_INI_CONFIG)
 			std::wstring _iniName;
 			bool _isIniNameSet = false;
 #endif
 		} g_dmCfg;
-	} // anonymous namespace
+	}; // anonymous namespace
 
 	struct Brushes
 	{
@@ -692,19 +696,19 @@ namespace DarkMode
 			, _pens(colors)
 		{}
 
-		void updateTheme()
+		void updateTheme() noexcept
 		{
 			_brushes.updateBrushes(_colors);
 			_pens.updatePens(_colors);
 		}
 
-		void updateTheme(Colors colors)
+		void updateTheme(Colors colors) noexcept
 		{
 			_colors = colors;
 			Theme::updateTheme();
 		}
 
-		[[nodiscard]] Colors getToneColors() const
+		[[nodiscard]] Colors getToneColors() const noexcept
 		{
 			switch (_tone)
 			{
@@ -747,7 +751,7 @@ namespace DarkMode
 			return darkColors;
 		}
 
-		void setToneColors(ColorTone colorTone)
+		void setToneColors(ColorTone colorTone) noexcept
 		{
 			_tone = colorTone;
 
@@ -800,23 +804,23 @@ namespace DarkMode
 			Theme::updateTheme();
 		}
 
-		void setToneColors()
+		void setToneColors() noexcept
 		{
 			_colors = Theme::getToneColors();
 			Theme::updateTheme();
 		}
 
-		[[nodiscard]] const Brushes& getBrushes() const
+		[[nodiscard]] const Brushes& getBrushes() const noexcept
 		{
 			return _brushes;
 		}
 
-		[[nodiscard]] const Pens& getPens() const
+		[[nodiscard]] const Pens& getPens() const noexcept
 		{
 			return _pens;
 		}
 
-		[[nodiscard]] const ColorTone& getColorTone() const
+		[[nodiscard]] const ColorTone& getColorTone() const noexcept
 		{
 			return _tone;
 		}
@@ -829,7 +833,7 @@ namespace DarkMode
 		ColorTone _tone = DarkMode::ColorTone::black;
 	};
 
-	static Theme& getTheme()
+	static Theme& getTheme() noexcept
 	{
 		static Theme tMain{};
 		return tMain;
@@ -845,7 +849,7 @@ namespace DarkMode
 	 * @see DarkMode::getColorTone()
 	 * @see DarkMode::Theme
 	 */
-	void setColorTone(ColorTone colorTone)
+	void setColorTone(ColorTone colorTone) noexcept
 	{
 		DarkMode::getTheme().setToneColors(colorTone);
 	}
@@ -857,7 +861,7 @@ namespace DarkMode
 	 *
 	 * @see DarkMode::setColorTone()
 	 */
-	ColorTone getColorTone()
+	ColorTone getColorTone() noexcept
 	{
 		return DarkMode::getTheme().getColorTone();
 	}
@@ -962,7 +966,7 @@ namespace DarkMode
 			ThemeView::updateView();
 		}
 
-		[[nodiscard]] const BrushesAndPensView& getViewBrushesAndPens() const
+		[[nodiscard]] const BrushesAndPensView& getViewBrushesAndPens() const noexcept
 		{
 			return _hbrPnView;
 		}
@@ -973,7 +977,7 @@ namespace DarkMode
 		BrushesAndPensView _hbrPnView;
 	};
 
-	static ThemeView& getThemeView()
+	static ThemeView& getThemeView() noexcept
 	{
 		static ThemeView tView{};
 		return tView;
@@ -999,52 +1003,52 @@ namespace DarkMode
 	COLORREF setHotEdgeColor(COLORREF clrNew)           { return DarkMode::setNewColor(&DarkMode::getTheme()._colors.hotEdge, clrNew); }
 	COLORREF setDisabledEdgeColor(COLORREF clrNew)      { return DarkMode::setNewColor(&DarkMode::getTheme()._colors.disabledEdge, clrNew); }
 
-	void setThemeColors(Colors colors)
+	void setThemeColors(Colors colors) noexcept
 	{
 		DarkMode::getTheme().updateTheme(colors);
 	}
 
-	void updateThemeBrushesAndPens()
+	void updateThemeBrushesAndPens() noexcept
 	{
 		DarkMode::getTheme().updateTheme();
 	}
 
-	COLORREF getBackgroundColor()         { return getTheme()._colors.background; }
-	COLORREF getCtrlBackgroundColor()     { return getTheme()._colors.ctrlBackground; }
-	COLORREF getHotBackgroundColor()      { return getTheme()._colors.hotBackground; }
-	COLORREF getDlgBackgroundColor()      { return getTheme()._colors.dlgBackground; }
-	COLORREF getErrorBackgroundColor()    { return getTheme()._colors.errorBackground; }
-	COLORREF getTextColor()               { return getTheme()._colors.text; }
-	COLORREF getDarkerTextColor()         { return getTheme()._colors.darkerText; }
-	COLORREF getDisabledTextColor()       { return getTheme()._colors.disabledText; }
-	COLORREF getLinkTextColor()           { return getTheme()._colors.linkText; }
-	COLORREF getEdgeColor()               { return getTheme()._colors.edge; }
-	COLORREF getHotEdgeColor()            { return getTheme()._colors.hotEdge; }
-	COLORREF getDisabledEdgeColor()       { return getTheme()._colors.disabledEdge; }
+	COLORREF getBackgroundColor() noexcept		{ return getTheme()._colors.background; }
+	COLORREF getCtrlBackgroundColor() noexcept	{ return getTheme()._colors.ctrlBackground; }
+	COLORREF getHotBackgroundColor() noexcept	{ return getTheme()._colors.hotBackground; }
+	COLORREF getDlgBackgroundColor() noexcept	{ return getTheme()._colors.dlgBackground; }
+	COLORREF getErrorBackgroundColor() noexcept	{ return getTheme()._colors.errorBackground; }
+	COLORREF getTextColor() noexcept			{ return getTheme()._colors.text; }
+	COLORREF getDarkerTextColor() noexcept		{ return getTheme()._colors.darkerText; }
+	COLORREF getDisabledTextColor() noexcept	{ return getTheme()._colors.disabledText; }
+	COLORREF getLinkTextColor() noexcept		{ return getTheme()._colors.linkText; }
+	COLORREF getEdgeColor() noexcept			{ return getTheme()._colors.edge; }
+	COLORREF getHotEdgeColor() noexcept			{ return getTheme()._colors.hotEdge; }
+	COLORREF getDisabledEdgeColor() noexcept	{ return getTheme()._colors.disabledEdge; }
 
-	HBRUSH getBackgroundBrush()           { return getTheme().getBrushes()._background; }
-	HBRUSH getCtrlBackgroundBrush()       { return getTheme().getBrushes()._ctrlBackground; }
-	HBRUSH getHotBackgroundBrush()        { return getTheme().getBrushes()._hotBackground; }
-	HBRUSH getDlgBackgroundBrush()        { return getTheme().getBrushes()._dlgBackground; }
-	HBRUSH getErrorBackgroundBrush()      { return getTheme().getBrushes()._errorBackground; }
+	HBRUSH getBackgroundBrush() noexcept		{ return getTheme().getBrushes()._background; }
+	HBRUSH getCtrlBackgroundBrush() noexcept	{ return getTheme().getBrushes()._ctrlBackground; }
+	HBRUSH getHotBackgroundBrush() noexcept		{ return getTheme().getBrushes()._hotBackground; }
+	HBRUSH getDlgBackgroundBrush() noexcept		{ return getTheme().getBrushes()._dlgBackground; }
+	HBRUSH getErrorBackgroundBrush() noexcept	{ return getTheme().getBrushes()._errorBackground; }
 
-	HBRUSH getEdgeBrush()                 { return getTheme().getBrushes()._edge; }
-	HBRUSH getHotEdgeBrush()              { return getTheme().getBrushes()._hotEdge; }
-	HBRUSH getDisabledEdgeBrush()         { return getTheme().getBrushes()._disabledEdge; }
+	HBRUSH getEdgeBrush() noexcept				{ return getTheme().getBrushes()._edge; }
+	HBRUSH getHotEdgeBrush() noexcept			{ return getTheme().getBrushes()._hotEdge; }
+	HBRUSH getDisabledEdgeBrush() noexcept		{ return getTheme().getBrushes()._disabledEdge; }
 
-	HPEN getDarkerTextPen()               { return getTheme().getPens()._darkerText; }
-	HPEN getEdgePen()                     { return getTheme().getPens()._edge; }
-	HPEN getHotEdgePen()                  { return getTheme().getPens()._hotEdge; }
-	HPEN getDisabledEdgePen()             { return getTheme().getPens()._disabledEdge; }
+	HPEN getDarkerTextPen() noexcept			{ return getTheme().getPens()._darkerText; }
+	HPEN getEdgePen() noexcept					{ return getTheme().getPens()._edge; }
+	HPEN getHotEdgePen() noexcept				{ return getTheme().getPens()._hotEdge; }
+	HPEN getDisabledEdgePen() noexcept			{ return getTheme().getPens()._disabledEdge; }
 
-	COLORREF setViewBackgroundColor(COLORREF clrNew)        { return DarkMode::setNewColor(&DarkMode::getThemeView()._clrView.background, clrNew); }
-	COLORREF setViewTextColor(COLORREF clrNew)              { return DarkMode::setNewColor(&DarkMode::getThemeView()._clrView.text, clrNew); }
-	COLORREF setViewGridlinesColor(COLORREF clrNew)         { return DarkMode::setNewColor(&DarkMode::getThemeView()._clrView.gridlines, clrNew); }
+	COLORREF setViewBackgroundColor(COLORREF clrNew)	{ return DarkMode::setNewColor(&DarkMode::getThemeView()._clrView.background, clrNew); }
+	COLORREF setViewTextColor(COLORREF clrNew)			{ return DarkMode::setNewColor(&DarkMode::getThemeView()._clrView.text, clrNew); }
+	COLORREF setViewGridlinesColor(COLORREF clrNew)		{ return DarkMode::setNewColor(&DarkMode::getThemeView()._clrView.gridlines, clrNew); }
 
-	COLORREF setHeaderBackgroundColor(COLORREF clrNew)      { return DarkMode::setNewColor(&DarkMode::getThemeView()._clrView.headerBackground, clrNew); }
-	COLORREF setHeaderHotBackgroundColor(COLORREF clrNew)   { return DarkMode::setNewColor(&DarkMode::getThemeView()._clrView.headerHotBackground, clrNew); }
-	COLORREF setHeaderTextColor(COLORREF clrNew)            { return DarkMode::setNewColor(&DarkMode::getThemeView()._clrView.headerText, clrNew); }
-	COLORREF setHeaderEdgeColor(COLORREF clrNew)            { return DarkMode::setNewColor(&DarkMode::getThemeView()._clrView.headerEdge, clrNew); }
+	COLORREF setHeaderBackgroundColor(COLORREF clrNew)		{ return DarkMode::setNewColor(&DarkMode::getThemeView()._clrView.headerBackground, clrNew); }
+	COLORREF setHeaderHotBackgroundColor(COLORREF clrNew) 	{ return DarkMode::setNewColor(&DarkMode::getThemeView()._clrView.headerHotBackground, clrNew); }
+	COLORREF setHeaderTextColor(COLORREF clrNew) 			{ return DarkMode::setNewColor(&DarkMode::getThemeView()._clrView.headerText, clrNew); }
+	COLORREF setHeaderEdgeColor(COLORREF clrNew) 			{ return DarkMode::setNewColor(&DarkMode::getThemeView()._clrView.headerEdge, clrNew); }
 
 	void setViewColors(ColorsView colors)
 	{
@@ -1056,22 +1060,22 @@ namespace DarkMode
 		DarkMode::getThemeView().updateView();
 	}
 
-	COLORREF getViewBackgroundColor()       { return DarkMode::getThemeView()._clrView.background; }
-	COLORREF getViewTextColor()             { return DarkMode::getThemeView()._clrView.text; }
-	COLORREF getViewGridlinesColor()        { return DarkMode::getThemeView()._clrView.gridlines; }
+	COLORREF getViewBackgroundColor() noexcept		{ return DarkMode::getThemeView()._clrView.background; }
+	COLORREF getViewTextColor() noexcept			{ return DarkMode::getThemeView()._clrView.text; }
+	COLORREF getViewGridlinesColor() noexcept		{ return DarkMode::getThemeView()._clrView.gridlines; }
 
-	COLORREF getHeaderBackgroundColor()     { return DarkMode::getThemeView()._clrView.headerBackground; }
-	COLORREF getHeaderHotBackgroundColor()  { return DarkMode::getThemeView()._clrView.headerHotBackground; }
-	COLORREF getHeaderTextColor()           { return DarkMode::getThemeView()._clrView.headerText; }
-	COLORREF getHeaderEdgeColor()           { return DarkMode::getThemeView()._clrView.headerEdge; }
+	COLORREF getHeaderBackgroundColor() noexcept	{ return DarkMode::getThemeView()._clrView.headerBackground; }
+	COLORREF getHeaderHotBackgroundColor() noexcept { return DarkMode::getThemeView()._clrView.headerHotBackground; }
+	COLORREF getHeaderTextColor() noexcept			{ return DarkMode::getThemeView()._clrView.headerText; }
+	COLORREF getHeaderEdgeColor() noexcept			{ return DarkMode::getThemeView()._clrView.headerEdge; }
 
-	HBRUSH getViewBackgroundBrush()         { return DarkMode::getThemeView().getViewBrushesAndPens()._background; }
-	HBRUSH getViewGridlinesBrush()          { return DarkMode::getThemeView().getViewBrushesAndPens()._gridlines; }
+	HBRUSH getViewBackgroundBrush() noexcept		{ return DarkMode::getThemeView().getViewBrushesAndPens()._background; }
+	HBRUSH getViewGridlinesBrush() noexcept			{ return DarkMode::getThemeView().getViewBrushesAndPens()._gridlines; }
 
-	HBRUSH getHeaderBackgroundBrush()       { return DarkMode::getThemeView().getViewBrushesAndPens()._headerBackground; }
-	HBRUSH getHeaderHotBackgroundBrush()    { return DarkMode::getThemeView().getViewBrushesAndPens()._headerHotBackground; }
+	HBRUSH getHeaderBackgroundBrush() noexcept		{ return DarkMode::getThemeView().getViewBrushesAndPens()._headerBackground; }
+	HBRUSH getHeaderHotBackgroundBrush() noexcept	{ return DarkMode::getThemeView().getViewBrushesAndPens()._headerHotBackground; }
 
-	HPEN getHeaderEdgePen()                 { return DarkMode::getThemeView().getViewBrushesAndPens()._headerEdge; }
+	HPEN getHeaderEdgePen() noexcept				{ return DarkMode::getThemeView().getViewBrushesAndPens()._headerEdge; }
 
 	/**
 	 * @brief Initializes default color set based on the current mode type.
@@ -1198,7 +1202,7 @@ namespace DarkMode
 	 * @see https://learn.microsoft.com/windows/win32/api/dwmapi/ne-dwmapi-dwm_window_corner_preference
 	 * @see DarkMode::setDarkTitleBarEx()
 	 */
-	void setRoundCornerConfig(UINT roundCornerStyle)
+	void setRoundCornerConfig(UINT roundCornerStyle) noexcept
 	{
 		const auto cornerStyle = static_cast<DWM_WINDOW_CORNER_PREFERENCE>(roundCornerStyle);
 		if (cornerStyle > DWMWCP_ROUNDSMALL) // || cornerStyle < DWMWCP_DEFAULT) // should never be < 0
@@ -1224,7 +1228,7 @@ namespace DarkMode
 	 * @see DWMWA_BORDER_COLOR
 	 * @see DarkMode::setDarkTitleBarEx()
 	 */
-	void setBorderColorConfig(COLORREF clr)
+	void setBorderColorConfig(COLORREF clr) noexcept
 	{
 		if (clr == kDwmwaClrDefaultRGBCheck)
 		{
@@ -1247,7 +1251,7 @@ namespace DarkMode
 	 * @see DWM_SYSTEMBACKDROP_TYPE
 	 * @see DarkMode::setDarkTitleBarEx()
 	 */
-	void setMicaConfig(UINT mica)
+	void setMicaConfig(UINT mica) noexcept
 	{
 		const auto micaType = static_cast<DWM_SYSTEMBACKDROP_TYPE>(mica);
 		if (micaType > DWMSBT_TABBEDWINDOW) // || micaType < DWMSBT_AUTO)  // should never be < 0
@@ -1270,7 +1274,7 @@ namespace DarkMode
 	 *
 	 * @see DarkMode::setDarkTitleBarEx()
 	 */
-	void setMicaExtendedConfig(bool extendMica)
+	void setMicaExtendedConfig(bool extendMica) noexcept
 	{
 		g_dmCfg._micaExtend = extendMica;
 	}
@@ -1284,7 +1288,7 @@ namespace DarkMode
 	 *
 	 * @see DarkMode::setDarkTitleBarEx()
 	 */
-	void setColorizeTitleBarConfig(bool colorize)
+	void setColorizeTitleBarConfig(bool colorize) noexcept
 	{
 		g_dmCfg._colorizeTitleBar = colorize;
 	}
@@ -1296,7 +1300,7 @@ namespace DarkMode
 	 */
 	static void initExperimentalDarkMode()
 	{
-		::InitDarkMode();
+		DarkModeHelper::InitDarkMode();
 	}
 
 	/**
@@ -1309,7 +1313,7 @@ namespace DarkMode
 	 */
 	static void setDarkMode(bool useDark, bool fixDarkScrollbar = true)
 	{
-		::SetDarkMode(useDark, fixDarkScrollbar);
+		DarkModeHelper::SetDarkMode(useDark, fixDarkScrollbar);
 	}
 
 	/**
@@ -1319,22 +1323,22 @@ namespace DarkMode
 	 * @param allow Whether to allow (`true`) or disallow (`false`) dark mode.
 	 * @return `true` if successfully applied.
 	 */
-	static bool allowDarkModeForWindow(HWND hWnd, bool allow)
+	static bool allowDarkModeForWindow(HWND hWnd, bool allow) noexcept
 	{
-		return ::AllowDarkModeForWindow(hWnd, allow);
+		return DarkModeHelper::AllowDarkModeForWindow(hWnd, allow);
 	}
 
-#if defined(_DARKMODELIB_ALLOW_OLD_OS)
+#if defined(_DARKMODE_SUPPORT_OLDER_OS)
 	/**
 	 * @brief Refreshes the title bar theme color for legacy systems.
 	 *
-	 * Used only on old Windows 10 systems when `_DARKMODELIB_ALLOW_OLD_OS` is defined.
+	 * Used only on old Windows 10 systems when `_DARKMODE_SUPPORT_OLDER_OS` is defined.
 	 *
 	 * @param hWnd Handle to the window to update.
 	 */
 	static void setTitleBarThemeColor(HWND hWnd)
 	{
-		::RefreshTitleBarThemeColor(hWnd);
+		DarkModeHelper::RefreshTitleBarThemeColor(hWnd);
 	}
 #endif
 
@@ -1346,7 +1350,7 @@ namespace DarkMode
 	 */
 	[[nodiscard]] static bool isColorSchemeChangeMessage(LPARAM lParam)
 	{
-		return ::IsColorSchemeChangeMessage(lParam);
+		return DarkModeHelper::IsColorSchemeChangeMessage(lParam);
 	}
 
 	/**
@@ -1356,7 +1360,7 @@ namespace DarkMode
 	 */
 	static bool isHighContrast()
 	{
-		return ::IsHighContrast();
+		return DarkModeHelper::IsHighContrast();
 	}
 
 	/**
@@ -1366,14 +1370,14 @@ namespace DarkMode
 	 *
 	 * @return `true` if themed appearance is preferred and supported.
 	 */
-	static bool isThemePrefered()
+	static bool isThemePrefered() noexcept
 	{
 		return (DarkMode::getLibInfo(LibInfo::preferTheme) == TRUE)
 			&& DarkMode::isAtLeastWindows10()
 			&& DarkMode::isExperimentalSupported();
 	}
 
-#if !defined(_DARKMODELIB_NO_INI_CONFIG)
+#if !defined(_DARKMODE_NO_INI_CONFIG)
 	 /**
 	  * @brief Initializes dark mode configuration and colors from an INI file.
 	  *
@@ -1394,9 +1398,7 @@ namespace DarkMode
 	static void initOptions(const std::wstring& iniName)
 	{
 		if (iniName.empty())
-		{
 			return;
-		}
 
 		const std::wstring iniPath = GetIniPath(iniName);
 		if (FileExists(iniPath))
@@ -1404,8 +1406,8 @@ namespace DarkMode
 			DarkMode::initDarkModeConfig(::GetPrivateProfileIntW(L"main", L"mode", 1, iniPath.c_str()));
 			if (g_dmCfg._dmType == DarkModeType::classic)
 			{
-				DarkMode::setViewBackgroundColor(::GetSysColor(COLOR_WINDOW));
-				DarkMode::setViewTextColor(::GetSysColor(COLOR_WINDOWTEXT));
+				DarkMode::setDarkModeConfig(static_cast<UINT>(DarkModeType::classic));
+				DarkMode::setDefaultColors(false);
 				return;
 			}
 
@@ -1488,7 +1490,7 @@ namespace DarkMode
 			DarkMode::setDefaultColors(true);
 		}
 	}
-#endif // !defined(_DARKMODELIB_NO_INI_CONFIG)
+#endif // !defined(_DARKMODE_NO_INI_CONFIG)
 
 	/**
 	 * @brief Applies dark mode settings based on the given configuration type.
@@ -1557,7 +1559,7 @@ namespace DarkMode
 				g_dmCfg._isInitExperimental = true;
 			}
 
-#if !defined(_DARKMODELIB_NO_INI_CONFIG)
+#if !defined(_DARKMODE_NO_INI_CONFIG)
 			if (!g_dmCfg._isIniNameSet)
 			{
 				g_dmCfg._iniName = iniName;
@@ -1596,14 +1598,14 @@ namespace DarkMode
 	/**
 	 * @brief Checks if non-classic mode is enabled.
 	 *
-	 * If `_DARKMODELIB_ALLOW_OLD_OS` is defined, this skips Windows version checks.
+	 * If `_DARKMODE_SUPPORT_OLDER_OS` is defined, this skips Windows version checks.
 	 * Otherwise, dark mode is only enabled on Windows 10 or newer.
 	 *
 	 * @return `true` if a supported dark mode type is active, otherwise `false`.
 	 */
-	bool isEnabled()
+	bool isEnabled() noexcept
 	{
-#if defined(_DARKMODELIB_ALLOW_OLD_OS)
+#if defined(_DARKMODE_SUPPORT_OLDER_OS)
 		return g_dmCfg._dmType != DarkModeType::classic;
 #else
 		return DarkMode::isAtLeastWindows10() && g_dmCfg._dmType != DarkModeType::classic;
@@ -1615,9 +1617,9 @@ namespace DarkMode
 	 *
 	 * @return `true` if experimental dark mode is enabled.
 	 */
-	bool isExperimentalActive()
+	bool isExperimentalActive() noexcept
 	{
-		return g_darkModeEnabled;
+		return DarkModeHelper::g_darkModeEnabled;
 	}
 
 	/**
@@ -1625,9 +1627,9 @@ namespace DarkMode
 	 *
 	 * @return `true` if dark mode experimental APIs are available.
 	 */
-	bool isExperimentalSupported()
+	bool isExperimentalSupported() noexcept
 	{
-		return g_darkModeSupported;
+		return DarkModeHelper::g_darkModeSupported;
 	}
 
 	/**
@@ -1635,7 +1637,7 @@ namespace DarkMode
 	 *
 	 * @return `true` if "mode" is not `WinMode::disabled`, i.e. system mode is followed.
 	 */
-	bool isWindowsModeEnabled()
+	bool isWindowsModeEnabled() noexcept
 	{
 		return g_dmCfg._windowsMode != WinMode::disabled;
 	}
@@ -1645,18 +1647,18 @@ namespace DarkMode
 	 *
 	 * @return `true` if running on Windows 10 or newer.
 	 */
-	bool isAtLeastWindows10()
+	bool isAtLeastWindows10() noexcept
 	{
-		return ::IsWindows10();
+		return WinVerHelper::IsWindows10_OrLater();
 	}
 	/**
 	 * @brief Checks if the host OS is at least Windows 11.
 	 *
 	 * @return `true` if running on Windows 11 or newer.
 	 */
-	bool isAtLeastWindows11()
+	bool isAtLeastWindows11() noexcept
 	{
-		return ::IsWindows11();
+		return WinVerHelper::IsWindows11_OrLater();
 	}
 
 	/**
@@ -1664,9 +1666,9 @@ namespace DarkMode
 	 *
 	 * @return Windows build number reported by the system.
 	 */
-	DWORD getWindowsBuildNumber()
+	DWORD getWindowsBuildNumber() noexcept
 	{
-		return GetWindowsBuildNumber();
+		return WinVerHelper::GetOSBuildNumber();
 	}
 
 	/**
@@ -1741,9 +1743,9 @@ namespace DarkMode
 	 * @param nIndex One of the supported system color indices.
 	 * @param color Custom `COLORREF` value to apply.
 	 */
-	void setSysColor(int nIndex, COLORREF color)
+	void setSysColor(int nIndex, COLORREF color) noexcept
 	{
-		::SetMySysColor(nIndex, color);
+		SysColorHook::SetMySysColor(nIndex, color);
 	}
 
 	/**
@@ -1753,7 +1755,7 @@ namespace DarkMode
 	 */
 	static bool hookSysColor()
 	{
-		return ::HookSysColor();
+		return SysColorHook::HookSysColor();
 	}
 
 	/**
@@ -1765,7 +1767,7 @@ namespace DarkMode
 	 */
 	static void unhookSysColor()
 	{
-		::UnhookSysColor();
+		SysColorHook::UnhookSysColor();
 	}
 
 	/**
@@ -1777,7 +1779,7 @@ namespace DarkMode
 	 */
 	void enableDarkScrollBarForWindowAndChildren(HWND hWnd)
 	{
-		::EnableDarkScrollBarForWindowAndChildren(hWnd);
+		DarkModeHelper::EnableDarkScrollBarForWindowAndChildren(hWnd);
 	}
 
 	/**
@@ -1835,20 +1837,21 @@ namespace DarkMode
 	class ThemeData
 	{
 	public:
+		// Constructors
 		ThemeData() = delete;
+		explicit ThemeData(const wchar_t* themeClass) noexcept
+			: _themeClass(themeClass) {};
 
-		explicit ThemeData(const wchar_t* themeClass)
-			: _themeClass(themeClass)
-		{}
-
+		// No copyable
 		ThemeData(const ThemeData&) = delete;
 		ThemeData& operator=(const ThemeData&) = delete;
 
+		// No movable
 		ThemeData(ThemeData&&) = delete;
 		ThemeData& operator=(ThemeData&&) = delete;
 
-		~ThemeData()
-		{
+		// Destructor
+		~ThemeData() {
 			closeTheme();
 		}
 
@@ -1870,7 +1873,7 @@ namespace DarkMode
 			}
 		}
 
-		[[nodiscard]] const HTHEME& getHTheme() const
+		[[nodiscard]] const HTHEME& getHTheme() const noexcept
 		{
 			return _hTheme;
 		}
@@ -1944,7 +1947,7 @@ namespace DarkMode
 			}
 		}
 
-		[[nodiscard]] const HDC& getHMemDC() const
+		[[nodiscard]] const HDC& getHMemDC() const noexcept
 		{
 			return _hMemDC;
 		}
@@ -2976,7 +2979,7 @@ namespace DarkMode
 			updateRect(hWnd);
 		}
 
-		void updateRectUpDown()
+		void updateRectUpDown() noexcept
 		{
 			if (_isHorizontal)
 			{
@@ -3914,8 +3917,7 @@ namespace DarkMode
 		ComboBoxData() = delete;
 
 		explicit ComboBoxData(LONG_PTR cbStyle)
-			: _cbStyle(cbStyle)
-		{}
+			: _cbStyle(cbStyle) {};
 	};
 
 	static void paintCombobox(HWND hWnd, HDC hdc, ComboBoxData& comboBoxData)
@@ -5718,7 +5720,7 @@ namespace DarkMode
 
 	void setChildCtrlsTheme(HWND hParent)
 	{
-#if defined(_DARKMODELIB_ALLOW_OLD_OS)
+#if defined(_DARKMODE_SUPPORT_OLDER_OS)
 		DarkMode::setChildCtrlsSubclassAndTheme(hParent, false, true);
 #else
 		DarkMode::setChildCtrlsSubclassAndTheme(hParent, false, DarkMode::isAtLeastWindows10());
@@ -7144,22 +7146,22 @@ namespace DarkMode
 	/**
 	 * @brief Configures the SysLink control to be affected by `WM_CTLCOLORSTATIC` message.
 	 *
-	 * Configures the first hyperlink item (index 0)
-	 * to either use default system link colors if in classic mode,
+	 * Configures all items to either use default system link colors if in classic mode,
 	 * or to be affected by `WM_CTLCOLORSTATIC` message from its parent.
 	 *
 	 * @param hWnd Handle to the SysLink control.
 	 *
-	 * @note Currently affects only the first link (index 0).
+	 * @note Will affect all items, even if it's static (non-clickable).
 	 */
 	void enableSysLinkCtrlCtlColor(HWND hWnd)
 	{
-		LITEM item{};
-		item.iLink = 0; // for now colorize only 1st item
-		item.mask = LIF_ITEMINDEX | LIF_STATE;
-		item.state = DarkMode::isEnabled() ? LIS_DEFAULTCOLORS : 0;
-		item.stateMask = LIS_DEFAULTCOLORS;
-		::SendMessage(hWnd, LM_SETITEM, 0, reinterpret_cast<LPARAM>(&item));
+		LITEM lItem{};
+		lItem.iLink = 0;
+		lItem.mask = LIF_ITEMINDEX | LIF_STATE;
+		lItem.state = DarkMode::isEnabled() ? LIS_DEFAULTCOLORS : 0;
+		lItem.stateMask = LIS_DEFAULTCOLORS;
+		while (::SendMessage(hWnd, LM_SETITEM, 0, reinterpret_cast<LPARAM>(&lItem)))
+			++lItem.iLink;
 	}
 
 	/**
@@ -7175,7 +7177,7 @@ namespace DarkMode
 	 *   (`DWMWA_CAPTION_COLOR`, `DWMWA_TEXT_COLOR`),
 	 *   only when frames are not extended to full window
 	 *
-	 * If `_DARKMODELIB_ALLOW_OLD_OS` is defined and running on pre-2004 builds,
+	 * If `_DARKMODE_SUPPORT_OLDER_OS` is defined and running on pre-2004 builds,
 	 * fallback behavior will enable dark title bars via undocumented APIs.
 	 *
 	 * @param hWnd Handle to the top-level window.
@@ -7188,9 +7190,8 @@ namespace DarkMode
 	 */
 	void setDarkTitleBarEx(HWND hWnd, bool useWin11Features)
 	{
-		static constexpr DWORD win10Build2004 = 19041;
-		static constexpr DWORD win11Mica = 22621;
-		if (DarkMode::getWindowsBuildNumber() >= win10Build2004)
+		static const DWORD buildNumber = DarkMode::getWindowsBuildNumber();
+		if (buildNumber >= WinVerHelper::WIN10_VER_2004)
 		{
 			const BOOL useDark = DarkMode::isExperimentalActive() ? TRUE : FALSE;
 			::DwmSetWindowAttribute(hWnd, DWMWA_USE_IMMERSIVE_DARK_MODE, &useDark, sizeof(useDark));
@@ -7202,7 +7203,7 @@ namespace DarkMode
 
 				bool canColorizeTitleBar = true;
 
-				if (DarkMode::getWindowsBuildNumber() >= win11Mica)
+				if (buildNumber >= WinVerHelper::WIN11_VER_22H2)
 				{
 					if (g_dmCfg._micaExtend && g_dmCfg._mica != DWMSBT_AUTO && !DarkMode::isWindowsModeEnabled() && (g_dmCfg._dmType == DarkModeType::dark))
 					{
@@ -7222,7 +7223,7 @@ namespace DarkMode
 				::DwmSetWindowAttribute(hWnd, DWMWA_TEXT_COLOR, &clrText, sizeof(clrText));
 			}
 		}
-#if defined(_DARKMODELIB_ALLOW_OLD_OS)
+#if defined(_DARKMODE_SUPPORT_OLDER_OS)
 		else
 		{
 			DarkMode::allowDarkModeForWindow(hWnd, DarkMode::isExperimentalActive());
@@ -7702,7 +7703,7 @@ namespace DarkMode
 	 *
 	 * @note Based on: https://stackoverflow.com/a/56678483
 	 */
-	double calculatePerceivedLightness(COLORREF clr)
+	double calculatePerceivedLightness(COLORREF clr) noexcept
 	{
 		auto linearValue = [](double colorChannel) -> double {
 			colorChannel /= 255.0;
@@ -7750,13 +7751,13 @@ namespace DarkMode
 	 *
 	 * @return Reference to the current `TreeViewStyle`.
 	 */
-	const TreeViewStyle& getTreeViewStyle()
+	const TreeViewStyle& getTreeViewStyle() noexcept
 	{
 		return g_dmCfg._tvStyle;
 	}
 
 	/// Set TreeView style
-	static void setTreeViewStyle(TreeViewStyle tvStyle)
+	static void setTreeViewStyle(TreeViewStyle tvStyle) noexcept
 	{
 		g_dmCfg._tvStyle = tvStyle;
 	}
@@ -7880,7 +7881,7 @@ namespace DarkMode
 	 *
 	 * @return Reference to the previous `TreeViewStyle`.
 	 */
-	const TreeViewStyle& getPrevTreeViewStyle()
+	const TreeViewStyle& getPrevTreeViewStyle() noexcept
 	{
 		return g_dmCfg._tvStylePrev;
 	}
@@ -7888,7 +7889,7 @@ namespace DarkMode
 	/**
 	 * @brief Stores the current TreeView style as the previous style for later comparison.
 	 */
-	void setPrevTreeViewStyle()
+	void setPrevTreeViewStyle() noexcept
 	{
 		g_dmCfg._tvStylePrev = DarkMode::getTreeViewStyle();
 	}
@@ -7902,7 +7903,7 @@ namespace DarkMode
 	 *
 	 * @see DarkMode::getTreeViewStyle()
 	 */
-	bool isThemeDark()
+	bool isThemeDark() noexcept
 	{
 		return DarkMode::getTreeViewStyle() == TreeViewStyle::dark;
 	}
@@ -7917,7 +7918,7 @@ namespace DarkMode
 	 *
 	 * @see DarkMode::calculatePerceivedLightness()
 	 */
-	bool isColorDark(COLORREF clr)
+	bool isColorDark(COLORREF clr) noexcept
 	{
 		static constexpr double middle = 50.0;
 		return DarkMode::calculatePerceivedLightness(clr) < (middle - kMiddleGrayRange);
@@ -8086,14 +8087,14 @@ namespace DarkMode
 	 *
 	 * @param hdc Handle to the device context (HDC) receiving the drawing instructions.
 	 * @return Background brush to use for painting, or `FALSE` (0) if classic mode is enabled
-	 *         and `_DARKMODELIB_DLG_PROC_CTLCOLOR_RETURNS` is defined.
+	 *         and `_DARKMODE_DLG_PROC_CTLCOLOR_RETURNS` is defined.
 	 *
 	 * @see DarkMode::WindowCtlColorSubclass()
 	 * @see DarkMode::onCtlColorListbox()
 	 */
 	LRESULT onCtlColor(HDC hdc)
 	{
-#if defined(_DARKMODELIB_DLG_PROC_CTLCOLOR_RETURNS)
+#if defined(_DARKMODE_DLG_PROC_CTLCOLOR_RETURNS)
 		if (!DarkMode::_isEnabled())
 		{
 			return FALSE;
@@ -8114,14 +8115,14 @@ namespace DarkMode
 	 *
 	 * @param hdc Handle to the device context for the target control.
 	 * @return The background brush, or `FALSE` if dark mode is disabled and
-	 *         `_DARKMODELIB_DLG_PROC_CTLCOLOR_RETURNS` is defined.
+	 *         `_DARKMODE_DLG_PROC_CTLCOLOR_RETURNS` is defined.
 	 *
 	 * @see DarkMode::WindowCtlColorSubclass()
 	 * @see DarkMode::onCtlColorListbox()
 	 */
 	LRESULT onCtlColorCtrl(HDC hdc)
 	{
-#if defined(_DARKMODELIB_DLG_PROC_CTLCOLOR_RETURNS)
+#if defined(_DARKMODE_DLG_PROC_CTLCOLOR_RETURNS)
 		if (!DarkMode::_isEnabled())
 		{
 			return FALSE;
@@ -8143,14 +8144,14 @@ namespace DarkMode
 	 *
 	 * @param hdc Handle to the device context for the target control.
 	 * @return The background brush, or `FALSE` if dark mode is disabled and
-	 *         `_DARKMODELIB_DLG_PROC_CTLCOLOR_RETURNS` is defined.
+	 *         `_DARKMODE_DLG_PROC_CTLCOLOR_RETURNS` is defined.
 	 *
 	 * @see DarkMode::WindowCtlColorSubclass()
 	 * @see DarkMode::onCtlColorListbox()
 	 */
 	LRESULT onCtlColorDlg(HDC hdc)
 	{
-#if defined(_DARKMODELIB_DLG_PROC_CTLCOLOR_RETURNS)
+#if defined(_DARKMODE_DLG_PROC_CTLCOLOR_RETURNS)
 		if (!DarkMode::_isEnabled())
 		{
 			return FALSE;
@@ -8169,13 +8170,13 @@ namespace DarkMode
 	 *
 	 * @param hdc Handle to the device context for the target control.
 	 * @return The background brush, or `FALSE` if dark mode is disabled and
-	 *         `_DARKMODELIB_DLG_PROC_CTLCOLOR_RETURNS` is defined.
+	 *         `_DARKMODE_DLG_PROC_CTLCOLOR_RETURNS` is defined.
 	 *
 	 * @see DarkMode::WindowCtlColorSubclass()
 	 */
 	LRESULT onCtlColorError(HDC hdc)
 	{
-#if defined(_DARKMODELIB_DLG_PROC_CTLCOLOR_RETURNS)
+#if defined(_DARKMODE_DLG_PROC_CTLCOLOR_RETURNS)
 		if (!DarkMode::_isEnabled())
 		{
 			return FALSE;
@@ -8197,13 +8198,13 @@ namespace DarkMode
 	 *
 	 * @param hdc Handle to the device context for the target control.
 	 * @return The background brush, or `FALSE` if dark mode is disabled and
-	 *         `_DARKMODELIB_DLG_PROC_CTLCOLOR_RETURNS` is defined.
+	 *         `_DARKMODE_DLG_PROC_CTLCOLOR_RETURNS` is defined.
 	 *
 	 * @see DarkMode::WindowCtlColorSubclass()
 	 */
 	LRESULT onCtlColorDlgStaticText(HDC hdc, bool isTextEnabled)
 	{
-#if defined(_DARKMODELIB_DLG_PROC_CTLCOLOR_RETURNS)
+#if defined(_DARKMODE_DLG_PROC_CTLCOLOR_RETURNS)
 		if (!DarkMode::_isEnabled())
 		{
 			::SetTextColor(hdc, ::GetSysColor(isTextEnabled ? COLOR_WINDOWTEXT : COLOR_GRAYTEXT));
@@ -8225,13 +8226,13 @@ namespace DarkMode
 	 *
 	 * @param hdc Handle to the device context for the target control.
 	 * @return The background brush, or `FALSE` if dark mode is disabled and
-	 *         `_DARKMODELIB_DLG_PROC_CTLCOLOR_RETURNS` is defined.
+	 *         `_DARKMODE_DLG_PROC_CTLCOLOR_RETURNS` is defined.
 	 *
 	 * @see DarkMode::WindowCtlColorSubclass()
 	 */
 	LRESULT onCtlColorDlgLinkText(HDC hdc, bool isTextEnabled)
 	{
-#if defined(_DARKMODELIB_DLG_PROC_CTLCOLOR_RETURNS)
+#if defined(_DARKMODE_DLG_PROC_CTLCOLOR_RETURNS)
 		if (!DarkMode::_isEnabled())
 		{
 			::SetTextColor(hdc, ::GetSysColor(isTextEnabled ? COLOR_HOTLIGHT : COLOR_GRAYTEXT));
@@ -8293,4 +8294,4 @@ namespace DarkMode
 	}
 } // namespace DarkMode
 
-#endif // !defined(_DARKMODELIB_NOT_USED)
+#endif // !defined(_DARKMODE_NOT_USED)
