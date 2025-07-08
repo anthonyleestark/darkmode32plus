@@ -1,5 +1,7 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+
+  <!-- Filter definitions -->
   <ItemGroup>
     <Filter Include="Source Files">
       <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
@@ -14,41 +16,53 @@
       <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
     </Filter>
   </ItemGroup>
+  
+  <!-- Header files -->
   <ItemGroup>
-    <ClInclude Include="..\include\DarkMode.h">
+    <ClInclude Include="../include/DarkMode.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\include\DMSubclass.h">
+    <ClInclude Include="../include/DMSubclass.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\include\IatHook.h">
+    <ClInclude Include="../include/IatHook.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\include\ModuleHelper.h">
+    <ClInclude Include="../include/ModuleHelper.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\include\SysColorHook.h">
+    <ClInclude Include="../include/SysColorHook.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\include\UAHMenuBar.h">
+    <ClInclude Include="../include/UAHMenuBar.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\include\Version.h">
+    <ClInclude Include="../include/Version.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\include\WinVerHelper.h">
+    <ClInclude Include="../include/WinVerHelper.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
+  
+  <!-- Source files -->
   <ItemGroup>
-    <ClCompile Include="..\src\DarkMode.cpp">
+    <ClCompile Include="../src/DarkMode.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\src\DMSubclass.cpp">
+    <ClCompile Include="../src/DMSubclass.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\src\SysColorHook.cpp">
+    <ClCompile Include="../src/SysColorHook.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
+  
+  <!-- Resource files -->
+  <ItemGroup>
+    <ResourceCompile Include="../res/VersionInfo.rc">
+      <Filter>Resource Files</Filter>
+    </ResourceCompile>
+  </ItemGroup>
+  
 </Project>
