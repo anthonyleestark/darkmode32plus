@@ -1668,7 +1668,9 @@ namespace DarkMode
 	 */
 	DWORD getWindowsBuildNumber() noexcept
 	{
-		return WinVerHelper::GetOSBuildNumber();
+		DWORD major = 0, minor = 0, buildNumber = 0;
+		WinVerHelper::GetOSVersionNumber(major, minor, buildNumber);
+		return buildNumber;
 	}
 
 	/**

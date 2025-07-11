@@ -107,7 +107,6 @@ namespace DarkModeHelper
 #endif
 
 // Function typename declarations
-	using fnRtlGetNtVersionNumbers = void (WINAPI*)(LPDWORD major, LPDWORD minor, LPDWORD build);
 #if defined(_DARKMODE_SUPPORT_OLDER_OS)
 	using fnSetWindowCompositionAttribute = BOOL(WINAPI*)(HWND hWnd, WINDOWCOMPOSITIONATTRIBDATA*);
 #endif
