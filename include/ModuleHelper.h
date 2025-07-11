@@ -48,10 +48,22 @@ namespace ModuleHelper
 	class ModuleHandle
 	{
 	public:
+		enum InitMode {
+			loadLibraryEx,
+			getModuleHandle
+		};
+
+	public:
 		// Constructors
 		ModuleHandle() = delete;
-		explicit ModuleHandle(const wchar_t* moduleName)
-			: hModule(LoadLibraryEx(moduleName, nullptr, LOAD_LIBRARY_SEARCH_SYSTEM32)) {
+		explicit ModuleHandle(HMODULE hModule) : hModule(hModule) {};
+		explicit ModuleHandle(const wchar_t* moduleName, int initMode = loadLibraryEx, int flag = -1) {
+			if (initMode == getModuleHandle)
+				hModule = GetModuleHandle(moduleName);
+			else if (initMode == loadLibraryEx) {
+				if (flag < 0) flag = LOAD_LIBRARY_SEARCH_SYSTEM32;	// default
+				hModule = LoadLibraryEx(moduleName, nullptr, flag);
+			}
 		};
 
 		// No copyable
@@ -69,12 +81,31 @@ namespace ModuleHelper
 		};
 
 	public:
+		// Get module handle pointer
 		[[nodiscard]] HMODULE Get() const noexcept {
 			return hModule;
 		};
 
+		// Is module loaded successfully???
 		[[nodiscard]] bool IsLoaded() const noexcept {
 			return hModule != nullptr;
+		};
+
+		// Load function from module by name
+		template <typename FuncPtr>
+		auto LoadFunction(FuncPtr& pointer, const char* name) const -> bool {
+			if (!hModule) return false;
+			if (auto proc = ::GetProcAddress(hModule, name); proc != nullptr) {
+				pointer = reinterpret_cast<FuncPtr>(proc);
+				return true;
+			}
+			return false;
+		};
+
+		// Load function from module by index
+		template <typename FuncPtr>
+		auto LoadFunction(FuncPtr& pointer, int index) const -> bool {
+			return LoadFunction(pointer, MAKEINTRESOURCEA(static_cast<int>(index)));
 		};
 
 	private:
@@ -97,20 +128,17 @@ namespace ModuleHelper
 
 	// Load function from module by name
 	template <typename FuncPtr>
-	static auto LoadFunc(HMODULE handle, FuncPtr& pointer, const char* name) -> bool
-	{
+	static auto LoadFunction(HMODULE handle, FuncPtr& pointer, const char* name) -> bool {
 		if (auto proc = ::GetProcAddress(handle, name); proc != nullptr) {
 			pointer = reinterpret_cast<FuncPtr>(proc);
 			return true;
 		}
-
 		return false;
 	};
 
 	// Load function from module by index
 	template <typename FuncPtr>
-	static auto LoadFunc(HMODULE handle, FuncPtr& pointer, WORD index) -> bool
-	{
-		return LoadFunc(handle, pointer, MAKEINTRESOURCEA(index));
+	static auto LoadFunction(HMODULE handle, FuncPtr& pointer, int index) -> bool {
+		return LoadFunction(handle, pointer, MAKEINTRESOURCEA(static_cast<int>(index)));
 	};
 };

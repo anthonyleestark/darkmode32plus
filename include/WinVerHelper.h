@@ -41,6 +41,7 @@
 
 #pragma once
 #include <windows.h>
+#include "ModuleHelper.h"
 
 namespace WinVerHelper
 {
@@ -71,21 +72,21 @@ namespace WinVerHelper
 	};
 
 	// Get Windows OS version build number
-	[[nodiscard]] inline DWORD GetOSBuildNumber() noexcept {
-		DWORD retBuildNumber = 0;
-		if (HMODULE hNtdll = GetModuleHandleW(L"ntdll.dll")) {
+	inline bool GetOSVersionNumber(DWORD &major, DWORD &minor, DWORD &buildNumber) noexcept {
+		using namespace ModuleHelper;
+		ModuleHandle moduleNtDll(L"ntdll.dll", ModuleHandle::getModuleHandle);
+		if (moduleNtDll.IsLoaded()) {
 			using fnRtlGetNtVersionNumbers = void (WINAPI*)(LPDWORD major, LPDWORD minor, LPDWORD build);
-			auto RtlGetNtVersionNumbers = reinterpret_cast<fnRtlGetNtVersionNumbers>(GetProcAddress(hNtdll, "RtlGetNtVersionNumbers"));
-			if (RtlGetNtVersionNumbers)
+			fnRtlGetNtVersionNumbers RtlGetNtVersionNumbers = nullptr;
+			if (moduleNtDll.LoadFunction(RtlGetNtVersionNumbers, "RtlGetNtVersionNumbers") && RtlGetNtVersionNumbers)
 			{
-				DWORD major = 0;
-				DWORD minor = 0;
-				RtlGetNtVersionNumbers(&major, &minor, &retBuildNumber);
-				retBuildNumber &= ~0xF0000000;
+				RtlGetNtVersionNumbers(&major, &minor, &buildNumber);
+				buildNumber &= ~0xF0000000;
+				return true;
 			}
 		}
 
-		return retBuildNumber;
+		return false;
 	};
 
 	// Check if is a Windows version or later
