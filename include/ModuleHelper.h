@@ -56,13 +56,14 @@ namespace ModuleHelper
 	public:
 		// Constructors
 		ModuleHandle() = delete;
-		explicit ModuleHandle(HMODULE hModule) : hModule(hModule) {};
+		explicit ModuleHandle(HMODULE hModule) : hModule_(hModule) {};
 		explicit ModuleHandle(const wchar_t* moduleName, int initMode = loadLibraryEx, int flag = -1) {
 			if (initMode == getModuleHandle)
-				hModule = GetModuleHandle(moduleName);
+				hModule_ = GetModuleHandle(moduleName);
 			else if (initMode == loadLibraryEx) {
-				if (flag < 0) flag = LOAD_LIBRARY_SEARCH_SYSTEM32;	// default
-				hModule = LoadLibraryEx(moduleName, nullptr, flag);
+				if (flag < 0) flag = LOAD_LIBRARY_SEARCH_SYSTEM32;		// default
+				hModule_ = LoadLibraryEx(moduleName, nullptr, flag);
+				isAutoFree_ = IsLoaded();
 			}
 		};
 
@@ -76,26 +77,26 @@ namespace ModuleHelper
 
 		// Destructor
 		~ModuleHandle() {
-			if (hModule != nullptr)
-				FreeLibrary(hModule);
+			if (hModule_ != nullptr && isAutoFree_)
+				FreeLibrary(hModule_);
 		};
 
 	public:
 		// Get module handle pointer
 		[[nodiscard]] HMODULE Get() const noexcept {
-			return hModule;
+			return hModule_;
 		};
 
 		// Is module loaded successfully???
 		[[nodiscard]] bool IsLoaded() const noexcept {
-			return hModule != nullptr;
+			return hModule_ != nullptr;
 		};
 
 		// Load function from module by name
 		template <typename FuncPtr>
 		auto LoadFunction(FuncPtr& pointer, const char* name) const -> bool {
-			if (!hModule) return false;
-			if (auto proc = ::GetProcAddress(hModule, name); proc != nullptr) {
+			if (!hModule_) return false;
+			if (auto proc = ::GetProcAddress(hModule_, name); proc != nullptr) {
 				pointer = reinterpret_cast<FuncPtr>(proc);
 				return true;
 			}
@@ -109,7 +110,8 @@ namespace ModuleHelper
 		};
 
 	private:
-		HMODULE hModule = nullptr;
+		HMODULE hModule_ = nullptr;
+		bool isAutoFree_ = false;
 	};
 
 	// Replace function pointer
