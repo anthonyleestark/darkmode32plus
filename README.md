@@ -7,6 +7,14 @@
 ## Description
 **Darkmode32plus** is a lightweight C++ static library that enables native dark mode support for Win32 applications on Windows 10 and later. It builds upon and enhances existing open-source efforts to provide reliable and modern dark mode integration for legacy and custom UI applications.
 
+## Project Status: On Hold
+
+> Development is currently on hold indefinitely. Between a new job and other personal priorities, I don't have the time to actively work on this project right now.
+>  
+> Since the project is still in its early stages and unreleased, I'm pausing work here to focus on other commitments. It's not permanently abandoned, and I hope to return to it someday if circumstances change, but for now, no new updates or features will be added.
+>  
+> Thanks to anyone taking a look at this repository!
+
 ## Features
  - 🖤 Native dark mode support for classic Win32 windows
  - 🧩 Hooks system UI theming APIs for seamless integration
