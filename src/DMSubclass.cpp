@@ -262,7 +262,7 @@ namespace DarkMode
 	 *
 	 * @param libInfoType Enum value specifying which piece of information to retrieve.
 	 * @return Integer value:
-	 * - Version: as defined by `DM_VERSION_MAJOR`, etc.
+	 * - Version: as defined by `DW_VERSION_MAJOR`, etc.
 	 * - Boolean flags: `TRUE` (1) if the feature is enabled, `FALSE` (0) otherwise.
 	 * - `featureCheck`, `maxValue`: returns the numeric max enum value.
 	 * - `-1`: for invalid or unhandled enum cases (should not occur in correct usage).
@@ -281,17 +281,17 @@ namespace DarkMode
 
 			case LibInfo::verMajor:
 			{
-				return DM_VERSION_MAJOR;
+				return DW_VERSION_MAJOR;
 			}
 
 			case LibInfo::verMinor:
 			{
-				return DM_VERSION_MINOR;
+				return DW_VERSION_MINOR;
 			}
 
 			case LibInfo::verRevision:
 			{
-				return DM_VERSION_REVISION;
+				return DW_VERSION_REVISION;
 			}
 
 			case LibInfo::iathookExternal:

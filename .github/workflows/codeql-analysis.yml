@@ -44,7 +44,7 @@ jobs:
         uses: microsoft/setup-msbuild@v2
 
       - name: Build ${{ matrix.arch }}
-        run: msbuild "darkmode32plus.sln" /m /p:configuration="${{ matrix.configuration }}" /p:platform="${{ matrix.platform }}" /t:darkmode32plus
+        run: msbuild "darkwin32.sln" /m /p:configuration="${{ matrix.configuration }}" /p:platform="${{ matrix.platform }}" /t:darkwin32
 
       - name: Perform CodeQL Analysis
         uses: github/codeql-action/analyze@v3

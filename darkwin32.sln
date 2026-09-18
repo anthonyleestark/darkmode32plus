@@ -3,7 +3,7 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.7.34031.279
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{D73E2E2D-A26A-4DB3-B9F0-365244304AD1}") = "darkmode32plus", "./project/darkmode32plus.vcxproj", "{40E6196F-E54E-4BFF-8A94-449BB8E2E34F}"
+Project("{D73E2E2D-A26A-4DB3-B9F0-365244304AD1}") = "darkwin32", "./project/darkwin32.vcxproj", "{40E6196F-E54E-4BFF-8A94-449BB8E2E34F}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

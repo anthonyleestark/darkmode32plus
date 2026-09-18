@@ -41,23 +41,23 @@
 
 #pragma once
 
-#define DM_VERSION_MAJOR						1
-#define DM_VERSION_MINOR						0
-#define DM_VERSION_PATCH						1
-#define DM_VERSION_REVISION						0
+#define DW_VERSION_MAJOR						1
+#define DW_VERSION_MINOR						0
+#define DW_VERSION_PATCH						1
+#define DW_VERSION_REVISION						0
 
-#define DM_PROJECT_NAME							L"darkmode32plus"
-#define DM_PRODUCT_INFO							L"Native Dark Mode Library for Win32 API Applications"
-#define DM_COMPANY_NAME							L"Stark Personal"
-#define DM_COPYRIGHT_INFO						L"Copyright (c) 2025 Anthony Lee Stark. All rights reserved."
+#define DW_PROJECT_NAME							L"darkwin32"
+#define DW_PRODUCT_INFO							L"Native Dark Mode Library for Win32 API Applications"
+#define DW_COMPANY_NAME							L"Stark Personal"
+#define DW_COPYRIGHT_INFO						L"Copyright (c) 2025 Anthony Lee Stark. All rights reserved."
 
-#define DM_VERSION_PRODUCT_NAME					DM_PRODUCT_INFO
-#define DM_VERSION_INTERNAL_NAME				L"darkmode32plus.lib"
-#define DM_VERSION_FILE_DESCRIPTION 			L"darkmode32plus v1.0.1.0"
-#define DM_VERSION_COMPANY_NAME					DM_COMPANY_NAME
-#define DM_VERSION_LEGAL_COPYRIGHT				DM_COPYRIGHT_INFO
+#define DW_VERSION_PRODUCT_NAME					DW_PRODUCT_INFO
+#define DW_VERSION_INTERNAL_NAME				L"darkwin32.lib"
+#define DW_VERSION_FILE_DESCRIPTION 			L"darkwin32 v1.0.1.0"
+#define DW_VERSION_COMPANY_NAME					DW_COMPANY_NAME
+#define DW_VERSION_LEGAL_COPYRIGHT				DW_COPYRIGHT_INFO
 
-#define DM_VERSION_PRODUCT_VALUE 				L"1.0"
-#define DM_VERSION_FILE_VALUE					L"1.0.1.0"
-#define DM_VERSION_PRODUCT_DIGITAL_VALUE 		DM_VERSION_MAJOR,DM_VERSION_MINOR
-#define DM_VERSION_FILE_DIGITAL_VALUE 			DM_VERSION_MAJOR,DM_VERSION_MINOR,DM_VERSION_PATCH,DM_VERSION_REVISION
+#define DW_VERSION_PRODUCT_VALUE 				L"1.0"
+#define DW_VERSION_FILE_VALUE					L"1.0.1.0"
+#define DW_VERSION_PRODUCT_DIGITAL_VALUE 		DW_VERSION_MAJOR,DW_VERSION_MINOR
+#define DW_VERSION_FILE_DIGITAL_VALUE 			DW_VERSION_MAJOR,DW_VERSION_MINOR,DW_VERSION_PATCH,DW_VERSION_REVISION

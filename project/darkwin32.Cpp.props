@@ -3,7 +3,7 @@
   <PropertyGroup Label="Configuration">
     <LinkIncremental>false</LinkIncremental>
     <EnableCppCoreCheck>true</EnableCppCoreCheck>
-    <CodeAnalysisRuleSet>darkmode32plus.ruleset</CodeAnalysisRuleSet>
+    <CodeAnalysisRuleSet>darkwin32.ruleset</CodeAnalysisRuleSet>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)'=='Debug'" Label="Configuration">

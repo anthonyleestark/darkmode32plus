@@ -32,4 +32,4 @@ jobs:
         uses: microsoft/setup-msbuild@v2
 
       - name: Build ${{ matrix.arch }}
-        run: msbuild "darkmode32plus.sln" /m /p:configuration="${{ matrix.configuration }}" /p:platform="${{ matrix.arch }}"
+        run: msbuild "darkwin32.sln" /m /p:configuration="${{ matrix.configuration }}" /p:platform="${{ matrix.arch }}"
